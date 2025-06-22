@@ -23,7 +23,7 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          region: ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
           role-to-assume: arn:aws:iam::181932585177:role/Github-OIDC-Role
 
       - name: Setup Node.js
