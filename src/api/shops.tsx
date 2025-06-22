@@ -81,8 +81,8 @@ export function useCreateShopInvite() {
 
 
 export type ShopsQueryParams = {
-  isMember?: boolean
-  isPending?: boolean
+  isMember: boolean | null
+  isPending: boolean | null
 }
 
 async function getShops({ isMember, isPending }: ShopsQueryParams) {

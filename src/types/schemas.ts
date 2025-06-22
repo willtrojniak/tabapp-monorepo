@@ -66,7 +66,7 @@ export type LocationCreate = z.infer<typeof locationCreateSchema>
 
 export const shopUserSchema = z.object({
   email: z.string().email().max(64),
-  roles: z.number().int().min(1).transform((val) => val >> 1)
+  roles: z.number().int().min(0)
 })
 
 export type ShopUserCreateInput = z.input<typeof shopUserSchema>
