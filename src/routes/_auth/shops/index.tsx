@@ -11,14 +11,14 @@ import { ensureShops, getShopsQueryOptions, useAcceptShopInvite, useRemoveShopIn
 export const Route = createFileRoute('/_auth/shops/')({
   component: ShopsComponent,
   loader: ({ context }) => {
-    return ensureShops(context.queryClient, { isMember: true });
+    return ensureShops(context.queryClient, { isMember: true, isPending: null });
   },
 })
 
 function ShopsComponent() {
   const { user } = Route.useRouteContext();
-  const { data: memberShops } = useSuspenseQuery(getShopsQueryOptions({ isMember: true, isPending: false }))
-  const { data: invitedShops } = useSuspenseQuery(getShopsQueryOptions({ isMember: true, isPending: true }))
+  const { data: memberShops } = useSuspenseQuery(getShopsQueryOptions({ isMember: true, isPending: null }))
+  const { data: invitedShops } = useSuspenseQuery(getShopsQueryOptions({ isMember: null, isPending: true }))
   const acceptInvite = useAcceptShopInvite()
   const rejectInvite = useRemoveShopInvite()
   return <div className='flex flex-col items-center gap-8 max-w-full'>
