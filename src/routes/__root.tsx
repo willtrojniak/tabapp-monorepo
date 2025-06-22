@@ -29,10 +29,9 @@ function RootComponent() {
         <TanstackRouterDevtools position="bottom-right" />
       </Suspense>
       <ReactQueryDevtools position="left" />
-      <Toaster />
-      <div className="text-xs p-2 mt-auto">
-        Developed by <a href="https://www.wtrojniak.ca" className="underline underline-offset-2">Will Trojniak</a>
-      </div>
+      <div className="fixed bottom-2 left-2 text-xs text-muted-foreground opacity-10">{import.meta.env.DEV ? "DEV" : (import.meta.env.VITE_BUILD).substr(0, 7)}</div>     <Toaster />
+      <div className="text-xs text-center p-2 mt-auto">
+        Developed by <a href="https://www.willtrojniak.com" className="underline underline-offset-2">Will Trojniak</a>  </div>
     </div>
   </DndContext>
 }

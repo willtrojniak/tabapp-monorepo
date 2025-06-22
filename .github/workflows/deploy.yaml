@@ -36,7 +36,8 @@ jobs:
         run: yarn install
 
       - name: Build
-        run: yarn build
+        run: |
+          VITE_BUILD="${{ github.sha }}" yarn build
 
       - name: Deploy
         uses: reggionick/s3-deploy@v4
