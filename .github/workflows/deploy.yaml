@@ -46,7 +46,7 @@ jobs:
           bucket: ${{ env.BUCKET_NAME }}
           bucket-region: ${{ env.AWS_REGION }}
           dist-id: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
-          invalidation: /
+          invalidation: /*
           delete-removed: true
           no-cache: true
           private: true
