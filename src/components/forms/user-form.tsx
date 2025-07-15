@@ -8,6 +8,7 @@ import { toast } from "../ui/use-toast";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { CardForm } from "./card-form";
+import { Checkbox } from "../ui/checkbox";
 
 function getUserDefaults(user: User): User {
   return { ...user, preferred_name: user.preferred_name ?? "" }
@@ -99,6 +100,19 @@ function UserFormBody({ control }: {
           <FormLabel>Email</FormLabel>
           <FormControl>
             <Input disabled {...field} className="col-span-2" />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+    <FormField
+      control={control}
+      name="enable_emails"
+      rules={{}}
+      render={({ field }) => (
+        <FormItem className="grid grid-cols-3 gap-4 items-center">
+          <FormLabel className="mt-2">Receive Email Notifications</FormLabel>
+          <FormControl>
+            <Checkbox checked={field.value} onCheckedChange={field.onChange} className="col-span-2" />
           </FormControl>
           <FormMessage />
         </FormItem>

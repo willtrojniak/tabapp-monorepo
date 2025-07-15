@@ -5,6 +5,7 @@ export type User = {
   id: string
   email: string
   name: string
+  enable_emails: boolean
   preferred_name?: string
   created_at: string
 }
@@ -44,6 +45,7 @@ export type Shop = ShopOverview & {
 }
 
 export type ShopUser = User & {
+  is_owner: boolean,
   updated_at: string,
   confirmed: boolean,
   roles: number

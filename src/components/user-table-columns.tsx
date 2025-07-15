@@ -44,7 +44,7 @@ export function useUserColumns(shopId: number): ColumnDef<ShopUser>[] {
         id: 'edit',
         cell: ({ row }) => {
           const user = row.original
-          return <ShopUserFormDialog shopId={shopId} user={user} >
+          return user.is_owner ? "" : <ShopUserFormDialog shopId={shopId} user={user} >
             <EditButton variant="ghost" />
           </ShopUserFormDialog>
         }
@@ -53,7 +53,8 @@ export function useUserColumns(shopId: number): ColumnDef<ShopUser>[] {
         id: 'delete',
         cell: ({ row }) => {
           const user = row.original
-          return <DialogDeleteForm title="Remove User" onDelete={() => onDelete({ shopId, email: user.email })} />
+          return user.is_owner ? "" : < DialogDeleteForm title="Remove User" onDelete={() => onDelete({ shopId, email: user.email })
+          } />
         }
       },
     ]

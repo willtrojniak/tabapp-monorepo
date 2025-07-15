@@ -44,7 +44,8 @@ export const categoryOverviewSchema = z.object({
 
 // Create/Update Schemas
 export const userUpdateSchema = z.object({
-  preferred_name: z.string().min(2).max(64).optional()
+  preferred_name: z.string().max(64).optional(),
+  enable_emails: z.boolean()
 })
 
 export type UserUpdate = z.infer<typeof userUpdateSchema>
