@@ -46,4 +46,4 @@ jobs:
 
       - name: Invalidate cloudfront distribution
         run: |
-          aws cloudfront create-invalidation --distribution-id ${{ env.CF_DIST_ID }} --paths /*
+          aws cloudfront create-invalidation --distribution-id ${{ env.CF_DIST_ID }} --paths "/*"
