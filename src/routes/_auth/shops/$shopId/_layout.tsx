@@ -1,6 +1,7 @@
 import { NavigationMenu, NavigationMenuLink } from '@/components/ui/navigation-menu'
 import { } from '@/components/ui/tabs'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { Suspense } from 'react'
 
 export const Route = createFileRoute('/_auth/shops/$shopId/_layout')({
   component: ShopIndexLayoutComponent,
@@ -15,7 +16,7 @@ function ShopIndexLayoutComponent() {
       <NavigationMenuLink asChild>
         <Link to='/shops/$shopId' params={{ shopId }}
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
-          Shop
+          Edit
         </Link>
       </NavigationMenuLink>
       <NavigationMenuLink asChild>
@@ -30,7 +31,15 @@ function ShopIndexLayoutComponent() {
           Users
         </Link>
       </NavigationMenuLink>
+      <NavigationMenuLink asChild>
+        <Link to='/shops/$shopId/integrations' params={{ shopId }}
+          className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
+          Integrations
+        </Link>
+      </NavigationMenuLink>
     </NavigationMenu>
-    <Outlet />
+    <Suspense fallback={"Loading..."}>
+      <Outlet />
+    </Suspense>
   </div>
 }

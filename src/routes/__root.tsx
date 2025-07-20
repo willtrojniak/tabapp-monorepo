@@ -24,7 +24,7 @@ function RootComponent() {
         <Breadcrumbs />
         <div className="flex flex-row gap-4 items-center">
           <Link to="/shops"> <Store className="size-6" /></Link>
-          <Link to="/profile"> <div className="bg-muted border p-1 rounded-full"><User className="size-8" /></div></Link>
+          <Link to="/profile"> <div className="bg-muted border p-1 rounded-full"><User className="size-6" /></div></Link>
         </div>
       </div>
       <main className="flex-auto max-w-full w-full flex flex-col">
