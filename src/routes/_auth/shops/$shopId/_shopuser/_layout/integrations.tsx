@@ -6,7 +6,7 @@ import { API_BASE_URL } from '@/util/constants';
 import { Button } from '@/components/ui/button';
 import { ShopSlackChannelsForm } from '@/components/forms/shop-slack-channels-form';
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout/integrations')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/_layout/integrations')({
   beforeLoad: () => ({ title: "Integrations" }),
   component: ShopIntegrationsComponent
 })

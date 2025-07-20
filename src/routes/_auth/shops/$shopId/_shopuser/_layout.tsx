@@ -3,7 +3,7 @@ import { } from '@/components/ui/tabs'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { Suspense } from 'react'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/_layout')({
   component: ShopIndexLayoutComponent,
   beforeLoad: () => ({ title: "" })
 })

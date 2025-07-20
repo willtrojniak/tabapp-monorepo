@@ -10,7 +10,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import React, { Suspense } from 'react';
 
-export const Route = createFileRoute('/_auth/shops/$shopId/checkout')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout')({
   beforeLoad: () => {
     return { title: "Checkout" }
   },

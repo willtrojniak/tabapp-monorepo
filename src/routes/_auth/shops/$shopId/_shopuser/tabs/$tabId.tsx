@@ -2,7 +2,7 @@ import { ensureShopTabForId, getShopTabForIdQueryOptions } from '@/api/tabs'
 import { createFileRoute, notFound } from '@tanstack/react-router'
 import { z } from 'zod'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/tabs/$tabId')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/tabs/$tabId')({
   params: {
     parse: (params) => ({
       tabId: z.number().int().parse(Number(params.tabId)),

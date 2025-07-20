@@ -13,7 +13,7 @@ import { getShopSubstitutionsQueryOptions } from '@/api/substitutions'
 import { authorizeShopAction, ShopAction } from '@/util/authorization'
 import { getShopForIdQueryOptions } from '@/api/shops'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/items/$itemId/')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/items/$itemId/')({
   component: ItemComponent
 })
 

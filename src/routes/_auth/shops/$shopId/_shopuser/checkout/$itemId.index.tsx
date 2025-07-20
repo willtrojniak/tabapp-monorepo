@@ -9,7 +9,7 @@ const searchSchema = z.object({
   tabId: z.number().min(1),
 })
 
-export const Route = createFileRoute('/_auth/shops/$shopId/checkout/$itemId/')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout/$itemId/')({
   validateSearch: (search) => searchSchema.parse(search),
   component: ItemCheckoutComponent
 })

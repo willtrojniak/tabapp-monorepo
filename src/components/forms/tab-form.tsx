@@ -15,6 +15,7 @@ import { SheetForm } from "./sheet-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { CardForm } from "./card-form";
 import { ReactSelect } from "../ui/react-select";
+import { Card, CardContent, CardHeader } from "../ui/card";
 
 function getTabDefaults(tab?: Tab) {
   return {
@@ -87,7 +88,7 @@ export function useTabForm({ shopId, tab }: {
       })
     }
   }, [shopId, tab?.id])
-  const title = !tab?.id ? "Submit a tab request" : "Edit a tab request"
+  const title = !tab?.id ? `Submit a Tab Request` : "Edit a tab request"
   const desc = !tab?.id ? "Create a new tab request." : "Make changes to an existing tab request."
 
   return { form, onSubmit, title, desc }
@@ -99,10 +100,14 @@ export function TabFormCard({ shop, tab }: {
 }) {
   const { form, onSubmit, title, desc } = useTabForm({ shopId: shop.id, tab })
 
-  return <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} >
-    <TabFormBody control={form.control} shop={shop} />
-  </CardForm>
-
+  return form.formState.isSubmitSuccessful ?
+    <Card className="h-100">
+      <CardHeader>Success!</CardHeader>
+      <CardContent>You've successfully submitted a tab request to {shop.name}!</CardContent>
+    </Card> :
+    <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} >
+      <TabFormBody control={form.control} shop={shop} />
+    </CardForm>
 }
 
 export function TabFormSheet({ children, shop, tab }: {

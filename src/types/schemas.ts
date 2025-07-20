@@ -159,8 +159,8 @@ const chartstring = z.string().regex(/^([A-z0-9]{5})[ |-]?([A-z0-9]{5})(?:(?:-|\
 
 
 export const tabCreateSchema = z.object({
-  display_name: z.string({ description: "Tab Name" }).min(2, "Tab name must be at least two characters").max(64),
-  organization: z.string().min(3, "Organization must be at least two characters").max(64),
+  display_name: z.string({ description: "Tab Name" }).min(2, "Tab name must be at least two characters long").max(64),
+  organization: z.string().min(3, "Organization must be at least two characters long").max(64),
   payment: z.object({
     payment_method: z.nativeEnum(PaymentMethod, { message: "Invalid value" }),
     payment_details: z.union([z.string().length(0, { message: "Invalid charstring. Must be of format XXXXX-XXXXX(-XXXXX)" }), chartstring.optional()]),
@@ -181,7 +181,7 @@ export const tabCreateSchema = z.object({
   billing_interval_days: z.number().min(1, { message: "Billing interval must be at least one day" }).max(365),
   location_ids: z.array(z.object({
     id: z.number().min(1)
-  }).transform(({ id }) => id)).min(1),
+  }).transform(({ id }) => id)).min(1, "Select at least one location"),
   dates: z.object({
     from: z.string({ message: "Required" }).date("Invalid date"),
     to: z.string({ message: "Required" }).date("Invalid date")

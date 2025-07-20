@@ -23,7 +23,7 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader } from '@/components/u
 import { Separator } from '@/components/ui/separator';
 
 
-export const Route = createFileRoute('/_auth/shops/$shopId/tabs/$tabId/')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/tabs/$tabId/')({
   component: TabComponent
 })
 

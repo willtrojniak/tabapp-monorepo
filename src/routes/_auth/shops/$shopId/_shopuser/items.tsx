@@ -30,7 +30,7 @@ const searchSchema = z.object({
   category: z.number().min(1).optional().catch(undefined)
 })
 
-export const Route = createFileRoute('/_auth/shops/$shopId/items')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/items')({
   beforeLoad: () => ({ title: "Items" }),
   validateSearch: (search) => searchSchema.parse(search),
   component: ItemsComponent

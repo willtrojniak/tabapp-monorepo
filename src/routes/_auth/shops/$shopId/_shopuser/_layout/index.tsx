@@ -4,7 +4,7 @@ import { ShopFormCard } from '@/components/forms/shop-form'
 import { PaymentMethod } from '@/types/types'
 import { getShopForIdQueryOptions } from '@/api/shops'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout/')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/_layout/')({
   component: ShopComponent
 })
 

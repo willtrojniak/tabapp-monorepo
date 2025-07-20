@@ -7,7 +7,7 @@ import { useUserColumns } from '@/components/user-table-columns';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout/users')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/_layout/users')({
   beforeLoad: () => ({ title: "Users" }),
   component: ShopUsersComponent,
 })

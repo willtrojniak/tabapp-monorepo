@@ -2,7 +2,7 @@ import { ensureShopItemForId } from '@/api/items';
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod';
 
-export const Route = createFileRoute('/_auth/shops/$shopId/checkout/$itemId')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout/$itemId')({
   params: {
     parse: (params) => ({
       itemId: z.number().int().parse(Number(params.itemId)),

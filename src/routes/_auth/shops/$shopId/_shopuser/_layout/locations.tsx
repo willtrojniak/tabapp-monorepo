@@ -8,7 +8,7 @@ import { DataTable } from '@/components/data-table';
 import { LocationFormDialog } from '@/components/forms/location-form';
 import { CreateButton } from '@/components/ui/create-button';
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout/locations')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/_layout/locations')({
   beforeLoad: () => ({ title: "Locations" }),
   component: ShopLocationsComponent
 })
