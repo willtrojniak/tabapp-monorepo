@@ -16,7 +16,7 @@ function ProfileComponent() {
   const { user } = Route.useRouteContext();
   const auth = useAuth();
 
-  return <div className='flex flex-col items-start gap-4 max-w-full'>
+  return <div className='flex flex-col items-start p-4 gap-4 max-w-full'>
     <div className='flex flex-col lg:flex-row flex-wrap justify-start items-start gap-4 max-w-full'>
       <div className='flex flex-row flex-wrap items-start gap-2 lg:flex-col'>
         <Card>

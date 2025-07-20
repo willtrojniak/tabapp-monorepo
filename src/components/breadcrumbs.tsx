@@ -12,7 +12,9 @@ export function Breadcrumbs() {
         path: pathname,
         title: context?.title ?? ""
       }
-    }).filter(({ path, title }) => !path.endsWith("/") && title !== "")
+    }).filter(({ path, title }, i, arr) => {
+      return !path.endsWith("/") && title !== "" && (i === 0 || arr[i - 1].path !== path)
+    })
   }, [routerState.matches])
 
   return <Breadcrumb>

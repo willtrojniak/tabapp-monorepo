@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { categoryOverviewSchema, itemOverviewSchema, substitutionGroupSchema, tabCreateSchema } from "./schemas"
+import { categoryOverviewSchema, itemOverviewSchema, SlackChannels, substitutionGroupSchema, tabCreateSchema } from "./schemas"
 
 export type User = {
   id: string
@@ -42,7 +42,8 @@ export type LocationOverview = {
 export type Shop = ShopOverview & {
   locations: LocationOverview[]
   users: ShopUser[]
-}
+  slack_integrated: boolean
+} & SlackChannels
 
 export type ShopUser = User & {
   is_owner: boolean,
@@ -139,4 +140,9 @@ export type Bill = {
   end_date: string,
   is_paid: boolean,
   items: ItemOrder[]
+}
+
+export type SlackChannel = {
+  name: string,
+  is_private: boolean,
 }

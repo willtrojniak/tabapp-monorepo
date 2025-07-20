@@ -3839,6 +3839,13 @@ react-dom@^18.3.1:
     loose-envify "^1.1.0"
     scheduler "^0.23.2"
 
+react-error-boundary@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-6.0.0.tgz#a9e552146958fa77d873b587aa6a5e97544ee954"
+  integrity sha512-gdlJjD7NWr0IfkPlaREN2d9uUZUlksrfOx7SX62VRerwXbMY6ftGCIZua1VG1aXFNOimhISsTq+Owp725b9SiA==
+  dependencies:
+    "@babel/runtime" "^7.12.5"
+
 react-google-button@^0.8.0:
   version "0.8.0"
   resolved "https://registry.yarnpkg.com/react-google-button/-/react-google-button-0.8.0.tgz#dea1771a764f2240234daf72d96ccd4d90bb13ff"

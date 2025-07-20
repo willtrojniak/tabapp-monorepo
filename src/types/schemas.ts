@@ -209,11 +209,16 @@ export const tabCreateSchema = z.object({
 
 })
 
-
-
 export type TabCreateInput = z.input<typeof tabCreateSchema>
 export type TabCreate = z.output<typeof tabCreateSchema>
 
+export const slackChannelsUpdateSchema = z.object({
+  daily_update_slack_channel: z.string().max(64),
+  tab_request_slack_channel: z.string().max(64),
+  tab_bill_receipt_slack_channel: z.string().max(64),
+})
 
+export type SlackChannelsInput = z.input<typeof slackChannelsUpdateSchema>
+export type SlackChannels = z.infer<typeof slackChannelsUpdateSchema>
 
 

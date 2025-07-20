@@ -1,8 +1,8 @@
 import axios from "axios";
 import { QueryClient, QueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { API_BASE_URL, API_VERSION } from "../util/constants";
-import { Shop, ShopOverview } from "../types/types";
-import { ShopCreate, ShopUserCreate } from "@/types/schemas";
+import { Shop, ShopOverview, SlackChannel } from "../types/types";
+import { ShopCreate, ShopUserCreate, SlackChannels } from "@/types/schemas";
 
 function createShop({ data }: { data: ShopCreate }) {
   const url = `${API_BASE_URL}/api/${API_VERSION}/shops`
@@ -119,4 +119,40 @@ export async function ensureShopForId(queryClient: QueryClient, shopId: number) 
 
 export function invalidateGetShopForId(queryClient: QueryClient, shopId: number) {
   queryClient.invalidateQueries({ queryKey: ['shops', shopId] })
+}
+
+async function getShopSlackChannels(shopId: number) {
+  const url = encodeURI(`${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/slack/channels`)
+  const response = await axios.get<SlackChannel[]>(url)
+  return response.data;
+}
+
+export function getShopSlackChannelsForIdQueryOptions(shopId: number) {
+  return {
+    queryKey: ['slack', 'channels', shopId],
+    queryFn: () => getShopSlackChannels(shopId)
+  } satisfies QueryOptions
+}
+
+export async function ensureShopSlackChannelsForId(queryClient: QueryClient, shopId: number) {
+  return await queryClient.ensureQueryData(getShopSlackChannelsForIdQueryOptions(shopId))
+}
+
+export function invalidateGetShopSlackChannels(queryClient: QueryClient, shopId: number) {
+  queryClient.invalidateQueries({ queryKey: getShopSlackChannelsForIdQueryOptions(shopId).queryKey })
+}
+
+function updateShopSlackChannels({ shopId, data }: { shopId: number, data: SlackChannels }) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/slack/channels`
+  return axios.patch(url, data)
+}
+
+export function useUpdateShopSlackChannels() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateShopSlackChannels,
+    onSuccess: (_, { shopId }) => {
+      queryClient.invalidateQueries({ queryKey: ['shops', shopId] })
+    },
+  })
 }
