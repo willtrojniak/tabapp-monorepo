@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { DndContext } from "@dnd-kit/core";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Suspense } from "react";
-import { Store, User } from "lucide-react";
+import { ClipboardList, Store, User } from "lucide-react";
 
 export const Route = createRootRouteWithContext<{
   auth: Auth
@@ -23,6 +23,7 @@ function RootComponent() {
       <div className="flex-shrink flex-grow-0 w-full basis-auto flex flex-row justify-between items-center px-6 py-4 border-b-2 border-muted">
         <Breadcrumbs />
         <div className="flex flex-row gap-4 items-center">
+          <Link to="/tabs"> <ClipboardList className="size-6" /></Link>
           <Link to="/shops"> <Store className="size-6" /></Link>
           <Link to="/profile"> <div className="bg-muted border p-1 rounded-full"><User className="size-6" /></div></Link>
         </div>

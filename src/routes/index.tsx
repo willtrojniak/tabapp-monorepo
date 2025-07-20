@@ -7,7 +7,7 @@ export const Route = createFileRoute('/')({
 })
 
 function Page() {
-  return <div className='flex-1 flex flex-col gap-4 py-4'>
+  return <div className='flex-1 flex flex-col gap-4 p-4'>
     <div className='flex justify-around flex-wrap gap-12'>
       <div className='flex flex-col justify-center items-start'>
         <h2 className='text-3xl font-bold mb-8'>Community one cup at a time</h2>

@@ -1,13 +1,15 @@
-import { ShopOverview, TabOverview } from "@/types/types"
+import { TabOverview } from "@/types/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card"
 import { TabTable } from "./tables/tab-table"
+import { ColumnDef } from "@tanstack/react-table"
 
 type PropsType = Omit<React.ComponentPropsWithoutRef<typeof Card>, "children"> & {
   tabs: TabOverview[],
-  shop: ShopOverview
+  columns: ColumnDef<TabOverview>[]
+  uri: string,
 }
 
-export function TabsTableCard({ shop, tabs, ...props }: PropsType) {
+export function TabsTableCard({ tabs, columns, uri, ...props }: PropsType) {
 
   return <Card {...props}>
     <CardHeader>
@@ -15,7 +17,7 @@ export function TabsTableCard({ shop, tabs, ...props }: PropsType) {
       <CardDescription>Search through and manage tabs.</CardDescription>
     </CardHeader>
     <CardContent>
-      <TabTable tabs={tabs} shopId={shop.id} />
+      <TabTable tabs={tabs} columns={columns} uri={uri} />
     </CardContent>
   </Card >
 }

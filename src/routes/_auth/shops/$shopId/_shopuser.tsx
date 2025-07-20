@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser')({
 
     if (!shop.users.find(v => v.id === context.user.id)) {
       throw redirect({
-        to: 'tab-request',
+        to: `/shops/${params.shopId}/tab-request`,
         replace: true,
       })
     }

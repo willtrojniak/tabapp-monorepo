@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthTabsImport } from './routes/_auth/tabs'
 import { Route as AuthShopsImport } from './routes/_auth/shops'
 import { Route as AuthProfileImport } from './routes/_auth/profile'
 import { Route as AuthShopsIndexImport } from './routes/_auth/shops/index'
@@ -51,6 +52,11 @@ const AuthRoute = AuthImport.update({
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AuthTabsRoute = AuthTabsImport.update({
+  path: '/tabs',
+  getParentRoute: () => AuthRoute,
 } as any)
 
 const AuthShopsRoute = AuthShopsImport.update({
@@ -210,6 +216,13 @@ declare module '@tanstack/react-router' {
       path: '/shops'
       fullPath: '/shops'
       preLoaderRoute: typeof AuthShopsImport
+      parentRoute: typeof AuthImport
+    }
+    '/_auth/tabs': {
+      id: '/_auth/tabs'
+      path: '/tabs'
+      fullPath: '/tabs'
+      preLoaderRoute: typeof AuthTabsImport
       parentRoute: typeof AuthImport
     }
     '/_auth/shops/$shopId': {
@@ -391,6 +404,7 @@ export const routeTree = rootRoute.addChildren({
       }),
       AuthShopsIndexRoute,
     }),
+    AuthTabsRoute,
   }),
   LoginRoute,
 })
@@ -415,7 +429,8 @@ export const routeTree = rootRoute.addChildren({
       "filePath": "_auth.tsx",
       "children": [
         "/_auth/profile",
-        "/_auth/shops"
+        "/_auth/shops",
+        "/_auth/tabs"
       ]
     },
     "/login": {
@@ -432,6 +447,10 @@ export const routeTree = rootRoute.addChildren({
         "/_auth/shops/$shopId",
         "/_auth/shops/"
       ]
+    },
+    "/_auth/tabs": {
+      "filePath": "_auth/tabs.tsx",
+      "parent": "/_auth"
     },
     "/_auth/shops/$shopId": {
       "filePath": "_auth/shops/$shopId.tsx",

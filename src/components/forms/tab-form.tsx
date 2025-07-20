@@ -15,7 +15,7 @@ import { SheetForm } from "./sheet-form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { CardForm } from "./card-form";
 import { ReactSelect } from "../ui/react-select";
-import { Card, CardContent, CardHeader } from "../ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 
 function getTabDefaults(tab?: Tab) {
   return {
@@ -102,7 +102,9 @@ export function TabFormCard({ shop, tab }: {
 
   return form.formState.isSubmitSuccessful ?
     <Card className="h-100">
-      <CardHeader>Success!</CardHeader>
+      <CardHeader>
+        <CardTitle>Success!</CardTitle>
+      </CardHeader>
       <CardContent>You've successfully submitted a tab request to {shop.name}!</CardContent>
     </Card> :
     <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} >
