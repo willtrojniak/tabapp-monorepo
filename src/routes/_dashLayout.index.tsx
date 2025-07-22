@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { ExternalLink } from 'lucide-react'
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/_dashLayout/')({
   component: Page
 })
 
@@ -15,7 +15,7 @@ function Page() {
           Bring your community closer together over at your favorite café and
           let us handle the logistics of tracking everyone's order!
         </p>
-        <Link to='/shops'><Button variant='default' className='gap-2'>Get Started <ExternalLink className='w-4 h-4' /></Button></Link>
+        <Link to='/dash'><Button variant='default' className='gap-2'>Get Started <ExternalLink className='w-4 h-4' /></Button></Link>
       </div>
       <div className='max-w-lg'>
         <img src='https://cafetrackr-assets.s3.us-east-1.amazonaws.com/tabs.png' className='object-cover shadow-black' />

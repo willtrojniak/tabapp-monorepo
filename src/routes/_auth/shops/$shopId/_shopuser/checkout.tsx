@@ -14,7 +14,8 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout')(
   beforeLoad: () => {
     return { title: "Checkout" }
   },
-  component: CheckoutComponent
+  component: CheckoutComponent,
+  errorComponent: v => { return v.error.message }
 })
 
 function CheckoutComponent() {

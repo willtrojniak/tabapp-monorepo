@@ -12,13 +12,16 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LoginImport } from './routes/login'
+import { Route as DashLayoutImport } from './routes/_dashLayout'
 import { Route as AuthImport } from './routes/_auth'
-import { Route as IndexImport } from './routes/index'
-import { Route as AuthTabsImport } from './routes/_auth/tabs'
-import { Route as AuthShopsImport } from './routes/_auth/shops'
-import { Route as AuthProfileImport } from './routes/_auth/profile'
-import { Route as AuthShopsIndexImport } from './routes/_auth/shops/index'
+import { Route as DashLayoutIndexImport } from './routes/_dashLayout.index'
+import { Route as AuthDashImport } from './routes/_auth/_dash'
 import { Route as AuthShopsShopIdImport } from './routes/_auth/shops/$shopId'
+import { Route as AuthDashTabsImport } from './routes/_auth/_dash.tabs'
+import { Route as AuthDashShopsImport } from './routes/_auth/_dash.shops'
+import { Route as AuthDashProfileImport } from './routes/_auth/_dash.profile'
+import { Route as AuthDashDashImport } from './routes/_auth/_dash.dash'
+import { Route as AuthDashShopsIndexImport } from './routes/_auth/_dash.shops.index'
 import { Route as AuthShopsShopIdTabRequestImport } from './routes/_auth/shops/$shopId/tab-request'
 import { Route as AuthShopsShopIdShopuserImport } from './routes/_auth/shops/$shopId/_shopuser'
 import { Route as AuthShopsShopIdShopuserTabsImport } from './routes/_auth/shops/$shopId/_shopuser/tabs'
@@ -44,39 +47,54 @@ const LoginRoute = LoginImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DashLayoutRoute = DashLayoutImport.update({
+  id: '/_dashLayout',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AuthRoute = AuthImport.update({
   id: '/_auth',
   getParentRoute: () => rootRoute,
 } as any)
 
-const IndexRoute = IndexImport.update({
+const DashLayoutIndexRoute = DashLayoutIndexImport.update({
   path: '/',
-  getParentRoute: () => rootRoute,
+  getParentRoute: () => DashLayoutRoute,
 } as any)
 
-const AuthTabsRoute = AuthTabsImport.update({
-  path: '/tabs',
+const AuthDashRoute = AuthDashImport.update({
+  id: '/_dash',
   getParentRoute: () => AuthRoute,
-} as any)
-
-const AuthShopsRoute = AuthShopsImport.update({
-  path: '/shops',
-  getParentRoute: () => AuthRoute,
-} as any)
-
-const AuthProfileRoute = AuthProfileImport.update({
-  path: '/profile',
-  getParentRoute: () => AuthRoute,
-} as any)
-
-const AuthShopsIndexRoute = AuthShopsIndexImport.update({
-  path: '/',
-  getParentRoute: () => AuthShopsRoute,
 } as any)
 
 const AuthShopsShopIdRoute = AuthShopsShopIdImport.update({
-  path: '/$shopId',
-  getParentRoute: () => AuthShopsRoute,
+  path: '/shops/$shopId',
+  getParentRoute: () => AuthRoute,
+} as any)
+
+const AuthDashTabsRoute = AuthDashTabsImport.update({
+  path: '/tabs',
+  getParentRoute: () => AuthDashRoute,
+} as any)
+
+const AuthDashShopsRoute = AuthDashShopsImport.update({
+  path: '/shops',
+  getParentRoute: () => AuthDashRoute,
+} as any)
+
+const AuthDashProfileRoute = AuthDashProfileImport.update({
+  path: '/profile',
+  getParentRoute: () => AuthDashRoute,
+} as any)
+
+const AuthDashDashRoute = AuthDashDashImport.update({
+  path: '/dash',
+  getParentRoute: () => AuthDashRoute,
+} as any)
+
+const AuthDashShopsIndexRoute = AuthDashShopsIndexImport.update({
+  path: '/',
+  getParentRoute: () => AuthDashShopsRoute,
 } as any)
 
 const AuthShopsShopIdTabRequestRoute = AuthShopsShopIdTabRequestImport.update({
@@ -183,18 +201,18 @@ const AuthShopsShopIdShopuserCheckoutItemIdIndexRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
-      parentRoute: typeof rootRoute
-    }
     '/_auth': {
       id: '/_auth'
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthImport
+      parentRoute: typeof rootRoute
+    }
+    '/_dashLayout': {
+      id: '/_dashLayout'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof DashLayoutImport
       parentRoute: typeof rootRoute
     }
     '/login': {
@@ -204,40 +222,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
-    '/_auth/profile': {
-      id: '/_auth/profile'
+    '/_auth/_dash': {
+      id: '/_auth/_dash'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthDashImport
+      parentRoute: typeof AuthImport
+    }
+    '/_dashLayout/': {
+      id: '/_dashLayout/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof DashLayoutIndexImport
+      parentRoute: typeof DashLayoutImport
+    }
+    '/_auth/_dash/dash': {
+      id: '/_auth/_dash/dash'
+      path: '/dash'
+      fullPath: '/dash'
+      preLoaderRoute: typeof AuthDashDashImport
+      parentRoute: typeof AuthDashImport
+    }
+    '/_auth/_dash/profile': {
+      id: '/_auth/_dash/profile'
       path: '/profile'
       fullPath: '/profile'
-      preLoaderRoute: typeof AuthProfileImport
-      parentRoute: typeof AuthImport
+      preLoaderRoute: typeof AuthDashProfileImport
+      parentRoute: typeof AuthDashImport
     }
-    '/_auth/shops': {
-      id: '/_auth/shops'
+    '/_auth/_dash/shops': {
+      id: '/_auth/_dash/shops'
       path: '/shops'
       fullPath: '/shops'
-      preLoaderRoute: typeof AuthShopsImport
-      parentRoute: typeof AuthImport
+      preLoaderRoute: typeof AuthDashShopsImport
+      parentRoute: typeof AuthDashImport
     }
-    '/_auth/tabs': {
-      id: '/_auth/tabs'
+    '/_auth/_dash/tabs': {
+      id: '/_auth/_dash/tabs'
       path: '/tabs'
       fullPath: '/tabs'
-      preLoaderRoute: typeof AuthTabsImport
-      parentRoute: typeof AuthImport
+      preLoaderRoute: typeof AuthDashTabsImport
+      parentRoute: typeof AuthDashImport
     }
     '/_auth/shops/$shopId': {
       id: '/_auth/shops/$shopId'
-      path: '/$shopId'
+      path: '/shops/$shopId'
       fullPath: '/shops/$shopId'
       preLoaderRoute: typeof AuthShopsShopIdImport
-      parentRoute: typeof AuthShopsImport
-    }
-    '/_auth/shops/': {
-      id: '/_auth/shops/'
-      path: '/'
-      fullPath: '/shops/'
-      preLoaderRoute: typeof AuthShopsIndexImport
-      parentRoute: typeof AuthShopsImport
+      parentRoute: typeof AuthImport
     }
     '/_auth/shops/$shopId/_shopuser': {
       id: '/_auth/shops/$shopId/_shopuser'
@@ -252,6 +284,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shops/$shopId/tab-request'
       preLoaderRoute: typeof AuthShopsShopIdTabRequestImport
       parentRoute: typeof AuthShopsShopIdImport
+    }
+    '/_auth/_dash/shops/': {
+      id: '/_auth/_dash/shops/'
+      path: '/'
+      fullPath: '/shops/'
+      preLoaderRoute: typeof AuthDashShopsIndexImport
+      parentRoute: typeof AuthDashShopsImport
     }
     '/_auth/shops/$shopId/_shopuser/_layout': {
       id: '/_auth/shops/$shopId/_shopuser/_layout'
@@ -364,48 +403,51 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren({
-  IndexRoute,
   AuthRoute: AuthRoute.addChildren({
-    AuthProfileRoute,
-    AuthShopsRoute: AuthShopsRoute.addChildren({
-      AuthShopsShopIdRoute: AuthShopsShopIdRoute.addChildren({
-        AuthShopsShopIdShopuserRoute: AuthShopsShopIdShopuserRoute.addChildren({
-          AuthShopsShopIdShopuserLayoutRoute:
-            AuthShopsShopIdShopuserLayoutRoute.addChildren({
-              AuthShopsShopIdShopuserLayoutIntegrationsRoute,
-              AuthShopsShopIdShopuserLayoutLocationsRoute,
-              AuthShopsShopIdShopuserLayoutUsersRoute,
-              AuthShopsShopIdShopuserLayoutIndexRoute,
-            }),
-          AuthShopsShopIdShopuserCheckoutRoute:
-            AuthShopsShopIdShopuserCheckoutRoute.addChildren({
-              AuthShopsShopIdShopuserCheckoutItemIdRoute:
-                AuthShopsShopIdShopuserCheckoutItemIdRoute.addChildren({
-                  AuthShopsShopIdShopuserCheckoutItemIdIndexRoute,
-                }),
-            }),
-          AuthShopsShopIdShopuserItemsRoute:
-            AuthShopsShopIdShopuserItemsRoute.addChildren({
-              AuthShopsShopIdShopuserItemsItemIdRoute:
-                AuthShopsShopIdShopuserItemsItemIdRoute.addChildren({
-                  AuthShopsShopIdShopuserItemsItemIdIndexRoute,
-                }),
-              AuthShopsShopIdShopuserItemsIndexRoute,
-            }),
-          AuthShopsShopIdShopuserTabsRoute:
-            AuthShopsShopIdShopuserTabsRoute.addChildren({
-              AuthShopsShopIdShopuserTabsTabIdRoute:
-                AuthShopsShopIdShopuserTabsTabIdRoute.addChildren({
-                  AuthShopsShopIdShopuserTabsTabIdIndexRoute,
-                }),
-            }),
-        }),
-        AuthShopsShopIdTabRequestRoute,
+    AuthDashRoute: AuthDashRoute.addChildren({
+      AuthDashDashRoute,
+      AuthDashProfileRoute,
+      AuthDashShopsRoute: AuthDashShopsRoute.addChildren({
+        AuthDashShopsIndexRoute,
       }),
-      AuthShopsIndexRoute,
+      AuthDashTabsRoute,
     }),
-    AuthTabsRoute,
+    AuthShopsShopIdRoute: AuthShopsShopIdRoute.addChildren({
+      AuthShopsShopIdShopuserRoute: AuthShopsShopIdShopuserRoute.addChildren({
+        AuthShopsShopIdShopuserLayoutRoute:
+          AuthShopsShopIdShopuserLayoutRoute.addChildren({
+            AuthShopsShopIdShopuserLayoutIntegrationsRoute,
+            AuthShopsShopIdShopuserLayoutLocationsRoute,
+            AuthShopsShopIdShopuserLayoutUsersRoute,
+            AuthShopsShopIdShopuserLayoutIndexRoute,
+          }),
+        AuthShopsShopIdShopuserCheckoutRoute:
+          AuthShopsShopIdShopuserCheckoutRoute.addChildren({
+            AuthShopsShopIdShopuserCheckoutItemIdRoute:
+              AuthShopsShopIdShopuserCheckoutItemIdRoute.addChildren({
+                AuthShopsShopIdShopuserCheckoutItemIdIndexRoute,
+              }),
+          }),
+        AuthShopsShopIdShopuserItemsRoute:
+          AuthShopsShopIdShopuserItemsRoute.addChildren({
+            AuthShopsShopIdShopuserItemsItemIdRoute:
+              AuthShopsShopIdShopuserItemsItemIdRoute.addChildren({
+                AuthShopsShopIdShopuserItemsItemIdIndexRoute,
+              }),
+            AuthShopsShopIdShopuserItemsIndexRoute,
+          }),
+        AuthShopsShopIdShopuserTabsRoute:
+          AuthShopsShopIdShopuserTabsRoute.addChildren({
+            AuthShopsShopIdShopuserTabsTabIdRoute:
+              AuthShopsShopIdShopuserTabsTabIdRoute.addChildren({
+                AuthShopsShopIdShopuserTabsTabIdIndexRoute,
+              }),
+          }),
+      }),
+      AuthShopsShopIdTabRequestRoute,
+    }),
   }),
+  DashLayoutRoute: DashLayoutRoute.addChildren({ DashLayoutIndexRoute }),
   LoginRoute,
 })
 
@@ -417,52 +459,67 @@ export const routeTree = rootRoute.addChildren({
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
         "/_auth",
+        "/_dashLayout",
         "/login"
       ]
-    },
-    "/": {
-      "filePath": "index.tsx"
     },
     "/_auth": {
       "filePath": "_auth.tsx",
       "children": [
-        "/_auth/profile",
-        "/_auth/shops",
-        "/_auth/tabs"
+        "/_auth/_dash",
+        "/_auth/shops/$shopId"
+      ]
+    },
+    "/_dashLayout": {
+      "filePath": "_dashLayout.tsx",
+      "children": [
+        "/_dashLayout/"
       ]
     },
     "/login": {
       "filePath": "login.tsx"
     },
-    "/_auth/profile": {
-      "filePath": "_auth/profile.tsx",
-      "parent": "/_auth"
-    },
-    "/_auth/shops": {
-      "filePath": "_auth/shops.tsx",
+    "/_auth/_dash": {
+      "filePath": "_auth/_dash.tsx",
       "parent": "/_auth",
       "children": [
-        "/_auth/shops/$shopId",
-        "/_auth/shops/"
+        "/_auth/_dash/dash",
+        "/_auth/_dash/profile",
+        "/_auth/_dash/shops",
+        "/_auth/_dash/tabs"
       ]
     },
-    "/_auth/tabs": {
-      "filePath": "_auth/tabs.tsx",
-      "parent": "/_auth"
+    "/_dashLayout/": {
+      "filePath": "_dashLayout.index.tsx",
+      "parent": "/_dashLayout"
+    },
+    "/_auth/_dash/dash": {
+      "filePath": "_auth/_dash.dash.tsx",
+      "parent": "/_auth/_dash"
+    },
+    "/_auth/_dash/profile": {
+      "filePath": "_auth/_dash.profile.tsx",
+      "parent": "/_auth/_dash"
+    },
+    "/_auth/_dash/shops": {
+      "filePath": "_auth/_dash.shops.tsx",
+      "parent": "/_auth/_dash",
+      "children": [
+        "/_auth/_dash/shops/"
+      ]
+    },
+    "/_auth/_dash/tabs": {
+      "filePath": "_auth/_dash.tabs.tsx",
+      "parent": "/_auth/_dash"
     },
     "/_auth/shops/$shopId": {
       "filePath": "_auth/shops/$shopId.tsx",
-      "parent": "/_auth/shops",
+      "parent": "/_auth",
       "children": [
         "/_auth/shops/$shopId/_shopuser",
         "/_auth/shops/$shopId/tab-request"
       ]
-    },
-    "/_auth/shops/": {
-      "filePath": "_auth/shops/index.tsx",
-      "parent": "/_auth/shops"
     },
     "/_auth/shops/$shopId/_shopuser": {
       "filePath": "_auth/shops/$shopId/_shopuser.tsx",
@@ -477,6 +534,10 @@ export const routeTree = rootRoute.addChildren({
     "/_auth/shops/$shopId/tab-request": {
       "filePath": "_auth/shops/$shopId/tab-request.tsx",
       "parent": "/_auth/shops/$shopId"
+    },
+    "/_auth/_dash/shops/": {
+      "filePath": "_auth/_dash.shops.index.tsx",
+      "parent": "/_auth/_dash/shops"
     },
     "/_auth/shops/$shopId/_shopuser/_layout": {
       "filePath": "_auth/shops/$shopId/_shopuser/_layout.tsx",

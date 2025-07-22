@@ -26,11 +26,12 @@ function LoginComponent() {
   return <div className='flex flex-col justify-center items-center w-full py-16'>
     <Card className='flex flex-col items-center'>
       <CardHeader className=''>
-        <CardTitle className='text-center'>Tab App Sign In</CardTitle>
-        <CardDescription className='w-fit text-center'>Sign in to track the status of your tabs.</CardDescription>
+        <CardTitle className='text-center'>CafeTrackr Sign In</CardTitle>
+        <CardDescription className='w-fit text-center'>Sign in to request new tabs and track their status</CardDescription>
       </CardHeader>
       <CardContent >
-        <a href={encodeURI(`${API_BASE_URL}/auth/google?redirect=${search.redirect}`)}><GoogleButton type='light' /></a>
+        <a href={encodeURI(`${API_BASE_URL}/auth/google?redirect=${search.redirect}`)}
+        ><GoogleButton type='light' /></a>
       </CardContent>
     </Card>
   </div>
