@@ -1,7 +1,7 @@
 import { getShopForIdQueryOptions } from '@/api/shops';
 import { DataTable } from '@/components/data-table';
 import { ShopUserFormDialog } from '@/components/forms/shop-user-form';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CreateButton } from '@/components/ui/create-button';
 import { useUserColumns } from '@/components/user-table-columns';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -23,15 +23,15 @@ function ShopUsersComponent() {
     <CardHeader>
       <CardTitle>Shop Users</CardTitle>
       <CardDescription>Manage users and their permissions.</CardDescription>
+      <CardAction>
+        <ShopUserFormDialog shopId={shopId}>
+          <CreateButton>Add User</CreateButton>
+        </ShopUserFormDialog>
+      </CardAction>
     </CardHeader>
     <CardContent>
       <DataTable columns={userCols} data={shop.users} />
     </CardContent>
-    <CardFooter>
-      <ShopUserFormDialog shopId={shopId}>
-        <CreateButton>Add User</CreateButton>
-      </ShopUserFormDialog>
-    </CardFooter>
   </Card> :
     <h2>Error 403: Forbidden</h2>
 }

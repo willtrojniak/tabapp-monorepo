@@ -5,8 +5,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 
 const searchSchema = z.object({
-  modal: z.boolean().catch(false),
-  tabId: z.number().min(1),
+  tab: z.number().min(1),
 })
 
 export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout/$itemId/')({
@@ -15,12 +14,12 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout/$i
 })
 
 function ItemCheckoutComponent() {
-  const { modal, tabId } = Route.useSearch()
+  const { tab, ...search } = Route.useSearch()
   const navigate = Route.useNavigate()
   const { shopId, itemId } = Route.useParams()
   const { data: item } = useSuspenseQuery(getShopItemForIdQueryOptions(shopId, itemId))
 
-  return <OrderFormDialog shopId={shopId} tabId={tabId} item={item} open={modal} onOpenChange={(open) => {
-    navigate({ search: { modal: open, tabId }, mask: { to: '/shops/$shopId/checkout', params: { shopId }, unmaskOnReload: true }, replace: true })
+  return <OrderFormDialog shopId={shopId} tabId={tab} item={item} open={true} onOpenChange={() => {
+    navigate({ to: "/shops/$shopId/checkout", params: { shopId }, search: { tab, ...search }, replace: true })
   }} />
 }

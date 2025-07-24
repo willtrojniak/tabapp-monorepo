@@ -6,7 +6,7 @@ import { useOnErrorToast } from "@/api/toasts";
 import { EditButton } from "./ui/edit-button";
 import { useRemoveShopInvite } from "@/api/shops";
 import { ShopUserFormDialog } from "./forms/shop-user-form";
-import { Check } from "lucide-react";
+import { Check, Crown, Loader, Send, UserRoundCheck } from "lucide-react";
 
 export function useUserColumns(shopId: number): ColumnDef<ShopUser>[] {
   const onError = useOnErrorToast();
@@ -35,9 +35,10 @@ export function useUserColumns(shopId: number): ColumnDef<ShopUser>[] {
         header: "Status",
         cell: ({ row }) => {
           const user = row.original
-          return <div className="flex justify-center items-center">
-            {!user.confirmed ? <span className="font-bold text-destructive text-lg">!</span> : <Check className="w-4 h-4" />}
+          return <div className="flex flex-wrap gap-2">
+            {!user.confirmed ? <><Send className="size-4" />Invite Pending </> : user.is_owner ? <><Crown className="size-4" /> Owner</> : <><UserRoundCheck className="size-4" />Confirmed User</>}
           </div>
+
         }
       },
       {

@@ -27,9 +27,12 @@ export function useTabCheckoutColumns(shopId: number): ColumnDef<TabOverview>[] 
       id: "link",
       cell: ({ row }) => {
         const tab = row.original
-        return <Link to="/shops/$shopId/tabs/$tabId" hash="tab" params={{ shopId: tab.shop_id, tabId: tab.id }}><Button variant="link"><ExternalLink className="w-4 h-4" /></Button></Link>
+        return <Link to="/shops/$shopId/checkout"
+          params={{ shopId: tab.shop_id }}
+          search={(prev) => ({ ...prev, modal: true })}
+          replace={false}
+        > <Button variant="link"><ExternalLink className="w-4 h-4" /></Button></Link >
       }
-
     },
     {
       accessorKey: "organization",

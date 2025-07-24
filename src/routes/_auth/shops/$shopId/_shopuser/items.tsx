@@ -16,7 +16,7 @@ import { EditButton } from '@/components/ui/edit-button'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { ReactSelect } from '@/components/ui/react-select'
-import { Category, ItemOverview } from '@/types/types'
+import { ItemOverview } from '@/types/types'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import { Save, Trash2, X } from 'lucide-react'
@@ -27,7 +27,7 @@ import { hasShopRole, shopRoles } from '@/util/authorization'
 import { getShopForIdQueryOptions } from '@/api/shops'
 
 const searchSchema = z.object({
-  category: z.number().min(1).optional().catch(undefined)
+  category: z.number().min(1).optional()
 })
 
 export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/items')({
@@ -38,21 +38,23 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/items')({
 
 function ItemsComponent() {
   const { user } = Route.useRouteContext();
-  const { category } = Route.useSearch()
-  const nav = Route.useNavigate();
+  const { category: categoryId } = Route.useSearch()
+  const navigate = Route.useNavigate();
   const { shopId } = Route.useParams();
   const { data: shop } = useSuspenseQuery(getShopForIdQueryOptions(shopId))
   const { data: items } = useSuspenseQuery(getShopItemsQueryOptions(shopId))
   const categories = useGetShopCategories(shopId);
+  const selectedCategory = React.useMemo(() => {
+    return categories.find(c => c.id === categoryId)
+  }, [categoryId, categories])
 
-  const [selectedCategory, setSelectedCategory] = React.useState<Category | undefined>(categories.find(c => c.id === category));
   const [editing, setEditing] = React.useState(false);
   const { form, onSubmit } = useCategoryForm({ shopId, category: selectedCategory, index: selectedCategory?.index })
 
-  const onCategoryChange = (category?: Category) => {
-    nav({ search: { category: category?.id } })
-    setSelectedCategory(category)
-  }
+  const onCategoryChange = React.useCallback((id: string) => {
+    navigate({ search: id ? { category: Number(id) } : {} })
+  }, [navigate])
+
   const deleteCategory = useDeleteCategory()
   const onError = useOnErrorToast()
   const onSuccess = useOnSuccessToast()
@@ -119,7 +121,6 @@ function ItemsComponent() {
                     onSuccess: () => {
                       onSuccess("Successfully deleted category.")
                       setEditing(false)
-                      setSelectedCategory(undefined)
                     }
                   })
                 }} />}
@@ -127,7 +128,7 @@ function ItemsComponent() {
               {editing && <Button className='gap-2'><Save className='w-4 h-4' />  Save Changes</Button>}
             </div>
           }
-          <CategoryTabSelect categories={categories} value={selectedCategory} onValueChange={onCategoryChange} disabled={editing} />
+          <CategoryTabSelect categories={categories} value={selectedCategory?.id.toString() ?? ""} onValueChange={onCategoryChange} disabled={editing} />
           <div className='grid  grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2'>
             {!selectedCategory && items.map(item => (
               <Link to='/shops/$shopId/items/$itemId' params={{ shopId, itemId: item.id }} key={item.id}><Button variant="secondary" className='min-w-32 w-full' type='button'>{item.name}</Button></Link>

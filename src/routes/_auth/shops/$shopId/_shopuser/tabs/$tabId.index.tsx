@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Dialog } from '@/components/ui/dialog';
-import { TabDialogContent } from '@/components/tab-dialog-content';
+import { TabDialog } from '@/components/tab-dialog-content';
 
 
 export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/tabs/$tabId/')({
@@ -12,10 +11,10 @@ function TabComponent() {
   const { user } = Route.useRouteContext();
   const navigate = Route.useNavigate()
 
-  return <Dialog open onOpenChange={() => {
+  return <TabDialog open onOpenChange={() => {
     navigate(({ to: '/shops/$shopId/tabs', params: { shopId }, replace: false }))
-  }}>
-    <TabDialogContent user={user} shopId={shopId} tabId={tabId} />
-  </Dialog >;
+  }}
+    user={user} shopId={shopId} tabId={tabId}
+  />
 }
 

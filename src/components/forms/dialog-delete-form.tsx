@@ -3,24 +3,29 @@ import { Button } from "../ui/button"
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
 import React from "react"
 
-export function DialogDeleteForm({ title, onDelete }: {
+export function DialogDeleteForm({ title, onDelete, open, onOpenChange }: {
   title: string,
   onDelete: () => Promise<void>
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }) {
-  const [open, setOpen] = React.useState(false)
+  const [intOpen, setIntOpen] = React.useState(false)
+  const onChange = onOpenChange ?? setIntOpen
 
   const handleDelete = React.useCallback(async () => {
     try {
       await onDelete()
-      setOpen(false)
+      onChange(false)
     } catch (e) { }
 
   }, [onDelete])
 
-  return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger asChild>
-      <Button variant="ghost"> <Trash2 className="h-4 w-4" /> </Button>
-    </DialogTrigger>
+  return <Dialog open={onOpenChange ? open : intOpen} onOpenChange={onChange}>
+    {!onOpenChange &&
+      <DialogTrigger asChild>
+        <Button variant="ghost"> <Trash2 className="h-4 w-4" /> </Button>
+      </DialogTrigger>
+    }
     <DialogContent>
       <DialogHeader>
         <DialogTitle> {title} </DialogTitle>

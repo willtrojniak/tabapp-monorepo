@@ -1,7 +1,6 @@
 import { getUserTabsQueryOptions } from '@/api/tabs'
-import { TabDialogContent } from '@/components/tab-dialog-content'
+import { TabDialog, } from '@/components/tab-dialog-content'
 import { useUserTabColumns } from '@/components/tables/user-tab-columns'
-import { Dialog } from '@/components/ui/dialog'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { z } from 'zod'
@@ -34,8 +33,8 @@ function TabsComponent() {
         <TabTable tabs={tabs} columns={columns} uri={'/tabs'} />
       </CardContent>
     </Card >
-    {!!shopId && !!tabId && <Dialog open onOpenChange={() => navigate({ search: {} })}>
-      <TabDialogContent user={user} shopId={shopId!} tabId={tabId!} />
-    </Dialog>}
+    {!!shopId && !!tabId &&
+      <TabDialog open user={user} onOpenChange={() => navigate({ search: {} })} shopId={shopId} tabId={tabId} />
+    }
   </div>
 }

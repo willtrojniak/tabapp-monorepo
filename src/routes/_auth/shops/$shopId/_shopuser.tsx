@@ -45,7 +45,14 @@ function ShopLayoutComponent() {
           Tabs
         </Link>
       }
-      {hasShopRole(user, shop, shopRoles.MANAGE_ORDERS) &&
+      {hasShopRole(user, shop, shopRoles.MANAGE_ITEMS) &&
+        <Link to={"/shops/$shopId/categories"} params={{ shopId: shopId }}
+          className='py-2 hover:underline'
+          activeProps={{ className: "underline" }}>
+          Categories
+        </Link>
+      }
+      {hasShopRole(user, shop, shopRoles.MANAGE_ITEMS) &&
         <Link to={"/shops/$shopId/items"} params={{ shopId: shopId }}
           className='py-2 hover:underline'
           activeProps={{ className: "underline" }}>
@@ -53,7 +60,7 @@ function ShopLayoutComponent() {
         </Link>
       }
     </div>
-    <div className='p-4 overflow-scroll'>
+    <div className='p-4 overflow-scroll w-full'>
       <Suspense>
         <Outlet />
       </Suspense>

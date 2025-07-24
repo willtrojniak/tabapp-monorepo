@@ -1,15 +1,14 @@
 import { useCreateCategory, useUpdateCategory } from "@/api/categories";
 import { CategoryCreate, CategoryCreateRaw, categoryCreateSchema } from "@/types/schemas";
-import { Category, ItemOverview } from "@/types/types";
+import { Category, } from "@/types/types";
 import { AxiosError } from "axios";
 import React from "react";
 import { toast } from "../ui/use-toast";
 import { Control, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
 import { Input } from "../ui/input";
 import { DialogForm } from "./dialog-form";
-import { SortableMultiSelect } from "../ui/sortable-select";
 
 function getCategoryDefaults(category?: Category, index?: number) {
   return {
@@ -84,18 +83,24 @@ export function useCategoryForm({ shopId, category, index }: {
   return { form, onSubmit, title, desc }
 }
 
-export function CategoryFormDialog({ children, shopId, category, index, items }: { children: React.ReactNode, shopId: number, category?: Category, index?: number, items: ItemOverview[] }) {
+export function CategoryFormDialog({ children, shopId, category, index, open, onOpenChange }: {
+  children?: React.ReactNode,
+  shopId: number,
+  category?: Category,
+  index?: number
+  open?: boolean
+  onOpenChange?: (isOpen: boolean) => void
+}) {
   const { form, onSubmit, title, desc } = useCategoryForm({ shopId, category, index })
 
-  return <DialogForm form={form} onSubmit={onSubmit} title={title} desc={desc} trigger={children} shouldClose={!category}>
-    <CategoryFormBody control={form.control} category={category} items={items} />
+  return <DialogForm open={open} onOpenChange={onOpenChange} form={form} onSubmit={onSubmit} title={title} desc={desc} trigger={children}>
+    <CategoryFormBody control={form.control} category={category} />
   </DialogForm>
 }
 
-function CategoryFormBody({ control, items }: {
+function CategoryFormBody({ control }: {
   control: Control<CategoryCreateRaw>,
   category?: Category,
-  items: ItemOverview[]
 }) {
   return <>
     <FormField
@@ -108,26 +113,6 @@ function CategoryFormBody({ control, items }: {
           <FormControl>
             <Input {...field} placeholder="Drinks" />
           </FormControl>
-          <FormDescription>Category name.</FormDescription>
-          <FormMessage />
-        </FormItem>
-      )} />
-    <FormField
-      control={control}
-      name="item_ids"
-      render={({ field }) => (
-        <FormItem>
-          <FormLabel>Items</FormLabel>
-          <FormControl>
-            <SortableMultiSelect
-              {...field}
-              isMulti
-              options={items}
-              getOptionValue={(i) => { const item = i as ItemOverview; return item.id.toString() }}
-              getOptionLabel={(i) => { const item = i as ItemOverview; return item.name }}
-            />
-          </FormControl>
-          <FormDescription>Items in the category. Drag to reorder.</FormDescription>
           <FormMessage />
         </FormItem>
       )} />

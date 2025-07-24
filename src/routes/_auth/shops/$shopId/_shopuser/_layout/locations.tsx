@@ -1,5 +1,5 @@
 import { getShopForIdQueryOptions } from '@/api/shops';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useLocationColumns } from '@/components/location-table-columns';
 import { hasShopRole, shopRoles } from '@/util/authorization';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -25,15 +25,15 @@ function ShopLocationsComponent() {
       <CardHeader>
         <CardTitle>Shop Locations</CardTitle>
         <CardDescription>Manage where tabs can be hosted.</CardDescription>
+        <CardAction>
+          <LocationFormDialog shopId={shopId}>
+            <CreateButton> Create Location</CreateButton>
+          </LocationFormDialog>
+        </CardAction>
       </CardHeader>
       <CardContent>
         <DataTable columns={locationCols} data={shop.locations} />
       </CardContent>
-      <CardFooter>
-        <LocationFormDialog shopId={shopId}>
-          <CreateButton> Create Location</CreateButton>
-        </LocationFormDialog>
-      </CardFooter>
     </Card> :
     <h2>Error 403: Forbidden</h2>
 }

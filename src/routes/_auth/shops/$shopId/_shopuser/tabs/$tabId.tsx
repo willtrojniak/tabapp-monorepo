@@ -7,7 +7,7 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/tabs/$tabId
     parse: (params) => ({
       tabId: z.number().int().parse(Number(params.tabId)),
     }),
-    stringify: ({ tabId }) => ({ tabId: tabId.toString() })
+    stringify: ({ tabId }) => ({ tabId: tabId?.toString() })
   },
   beforeLoad: async ({ context, params }) => {
     const data = await context.queryClient.fetchQuery(getShopTabForIdQueryOptions(params.shopId, params.tabId)).then(data => data).catch(() => {
