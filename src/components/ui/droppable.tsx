@@ -8,7 +8,7 @@ export function Droppable({ id, children }: {
   const { setNodeRef } = useDroppable({ id })
 
 
-  return <div ref={setNodeRef} className="grid grid-cols-subgrid col-span-full">
+  return <div ref={setNodeRef} className="w-full">
     {children}
   </div>
 }

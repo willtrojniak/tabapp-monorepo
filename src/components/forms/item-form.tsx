@@ -97,7 +97,7 @@ export function ItemFormDialog({ children, shopId, item, categories, addons, sub
 export function ItemFormCard({ shopId, item, categories, addons, substitutions, disabled }: { shopId: number, item?: Item, categories: CategoryOverview[], addons: ItemOverview[], substitutions: SubstitutionGroup[], disabled?: boolean }) {
   const { form, onSubmit, title, desc } = useItemForm({ shopId, item })
 
-  return <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} disabled={disabled}>
+  return <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} disabled={disabled} className="flex-grow basis-0 min-w-72">
     <div className="flex flex-col gap-2 items-start">
       <ItemFormBody control={form.control} categories={categories} addons={addons} substitutions={substitutions} disabled={disabled} />
     </div>

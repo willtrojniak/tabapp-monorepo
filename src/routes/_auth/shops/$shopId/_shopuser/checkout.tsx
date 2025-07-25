@@ -2,34 +2,67 @@ import { useGetShopCategories } from '@/api/categories';
 import { getShopForIdQueryOptions } from '@/api/shops';
 import { getShopTabsQueryOptions } from '@/api/tabs';
 import { CategoryTabSelect } from '@/components/category-items';
+import { TabDialog } from '@/components/tab-dialog-content';
 import { TabCheckoutTable } from '@/components/tables/tab-checkout-table';
 import { Button } from '@/components/ui/button';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable';
-import { Category, TabOverview } from '@/types/types';
+import { TabOverview } from '@/types/types';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
 import React, { Suspense } from 'react';
+import { z } from 'zod';
 
-export const Route = createFileRoute('/_auth/shops/$shopId/checkout')({
+export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout')({
+  validateSearch: z.object({
+    category: z.number().optional(),
+    tab: z.number().optional(),
+    modal: z.boolean().optional().default(false),
+  }),
   beforeLoad: () => {
     return { title: "Checkout" }
   },
-  component: CheckoutComponent
+  component: CheckoutComponent,
+  errorComponent: v => { return v.error.message }
 })
 
 function CheckoutComponent() {
+  const navigate = Route.useNavigate();
+  const { user } = Route.useRouteContext();
+
   const { shopId } = Route.useParams();
+  const { category: categoryId, tab: tabId, modal } = Route.useSearch()
+
   const categories = useGetShopCategories(shopId);
   const { data: shop } = useSuspenseQuery(getShopForIdQueryOptions(shopId))
   const { data: tabs } = useSuspenseQuery(getShopTabsQueryOptions(shopId))
 
-  const [selectedCategory, setSelectedCategory] = React.useState<Category | undefined>(categories[0])
-  const [selectedTab, setSelectedTab] = React.useState<TabOverview>()
+  const selectedCategory = React.useMemo(() => {
+    if (!categoryId) return categories[0];
+    return categories.find(c => c.id === categoryId)
+  }, [categories, categoryId])
 
-  return <ResizablePanelGroup direction='horizontal' >
-    <ResizablePanel defaultSize={33} className='@container py-2'>
+  const onCategoryChange = React.useCallback((id: string) => {
+    navigate({
+      search: prev => ({ ...prev, category: id ? Number(id) : undefined }),
+      replace: true
+    })
+  }, [navigate])
+
+  const selectedTab = React.useMemo(() => {
+    return tabs.find(t => t.id === tabId)
+  }, [tabs, tabId])
+
+  const onTabChange = React.useCallback((tab: TabOverview) => {
+    navigate({
+      search: prev => ({ ...prev, tab: tab.id }),
+      replace: true
+    })
+  }, [navigate])
+
+  return <><ResizablePanelGroup direction='horizontal' >
+    <ResizablePanel defaultSize={33} className='@container'>
       <div className='flex flex-col gap-2 items-start'>
-        <CategoryTabSelect value={selectedCategory} onValueChange={setSelectedCategory} categories={categories} allowNone={false} />
+        <CategoryTabSelect value={categoryId?.toString() ?? selectedCategory?.id.toString() ?? ""} onValueChange={onCategoryChange} categories={categories} allowNone={false} />
 
         <div className='grid  grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @3xl:grid-cols-5 @4xl:grid-cols-6 gap-2'>
           {selectedCategory?.items.map(i => (
@@ -38,8 +71,8 @@ function CheckoutComponent() {
               disabled={!selectedTab}
               to='/shops/$shopId/checkout/$itemId'
               params={{ shopId, itemId: i.id }}
-              search={{ modal: true, tabId: selectedTab?.id! }}
-              mask={{ to: '/shops/$shopId/checkout', params: { shopId }, unmaskOnReload: true }}
+              search={{ tab: selectedTab?.id!, category: categoryId, modal: false }}
+              // mask={{ to: '/shops/$shopId/checkout', params: { shopId }, unmaskOnReload: true }}
               replace={true}
             >
               <Button disabled={!selectedTab} className='w-fit min-w-full max-w-34' variant="secondary">{i.name}</Button>
@@ -54,11 +87,14 @@ function CheckoutComponent() {
     <ResizablePanel defaultSize={67} className='py-2' >
       <Suspense fallback={"Loading"}>
         <div className='flex flex-col items-start pl-6'>
-          <TabCheckoutTable shop={shop} data={tabs} selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+          <TabCheckoutTable shop={shop} data={tabs} selectedTab={selectedTab} setSelectedTab={onTabChange} />
           <Outlet />
         </div>
       </Suspense>
     </ResizablePanel>
-
   </ResizablePanelGroup >
+    {tabId &&
+      <TabDialog open={modal} onOpenChange={open => navigate({ search: prev => ({ ...prev, modal: open }), replace: true })} user={user} shopId={shopId} tabId={tabId} />
+    }
+  </>
 }

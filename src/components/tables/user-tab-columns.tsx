@@ -1,15 +1,12 @@
-import { TabOverview } from "@/types/types"
+import { TabOverview, TabStatus } from "@/types/types"
 import { ColumnDef } from "@tanstack/react-table"
 import { Format24hTime, GetActiveDayAcronyms, FormatDateMMDDYYYY } from "@/util/dates"
-import { Button } from "@/components/ui/button"
 import React from "react"
-import { ExternalLink, Eye } from "lucide-react"
-import { formatCurrencyUSD } from "@/util/currency"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog"
-import { isTabActiveNow } from "@/util/tabs"
-import { Link } from "@tanstack/react-router"
+import { BadgeAlert, Check } from "lucide-react"
+import { Badge } from "../ui/badge"
+import { filterInArray } from "./table"
 
-export function useTabCheckoutColumns(shopId: number): ColumnDef<TabOverview>[] {
+export function useUserTabColumns(): ColumnDef<TabOverview>[] {
   return React.useMemo(() => [
     {
       accessorKey: "id",
@@ -24,51 +21,49 @@ export function useTabCheckoutColumns(shopId: number): ColumnDef<TabOverview>[] 
       sortingFn: 'fuzzy',
     },
     {
-      id: "link",
+      id: "updates",
       cell: ({ row }) => {
         const tab = row.original
-        return <Link to="/shops/$shopId/checkout"
-          params={{ shopId: tab.shop_id }}
-          search={(prev) => ({ ...prev, modal: true })}
-          replace={false}
-        > <Button variant="link"><ExternalLink className="w-4 h-4" /></Button></Link >
+        return <div className="font-bold text-center">
+          {tab.pending_updates ? <BadgeAlert /> : ""}
+        </div>
       }
+    },
+    {
+      accessorKey: "status",
+      header: () => <div className="">Status</div>,
+      cell: ({ row }) => {
+        const tab = row.original
+        return <div className="">
+          <Badge
+            variant={tab.status === TabStatus.pending ? "default" : "outline"}>{tab.status}</Badge>
+        </div>
+      },
+      filterFn: filterInArray
+    },
+    {
+      accessorKey: "is_pending_balance",
+      header: () => <div className="">Balance</div>,
+      cell: ({ row }) => {
+        const tab = row.original
+        return <div className="flex justify-center items-center">
+          {tab.is_pending_balance ? <span className="font-bold text-destructive text-lg">!</span> : <Check className="w-4 h-4" />}
+        </div>
+      },
+      filterFn: filterInArray
     },
     {
       accessorKey: "organization",
       header: "Organization",
     },
     {
-      accessorKey: "verification_method",
-      header: "Verification Method",
-    },
-    {
-      accessorKey: "verification_list",
-      header: "Verified Users",
+      accessorKey: "locations",
+      header: () => <div>Locations</div>,
       cell: ({ row }) => {
         const tab = row.original
-        return tab.verification_list.length === 0 ? "-" : <Dialog>
-          <DialogTrigger asChild><Button variant="ghost"><Eye className="w-4 h-4" /></Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Verified Users</DialogTitle>
-            </DialogHeader>
-            <ul>
-              {tab.verification_list.map(email => <li key={email}>{email}</li>)}
-            </ul>
-          </DialogContent>
-        </Dialog>
-      }
+        return <div className="whitespace-nowrap">{tab.locations.map(v => v.name).join(", ")}</div>
 
-    },
-    {
-      accessorKey: "dollar_limit_per_order",
-      header: () => <div className="text-right">Limit</div>,
-      cell: ({ row }) => {
-        const tab = row.original
-        const formatted = formatCurrencyUSD(tab.dollar_limit_per_order)
-        return <div className="text-right font-medium">{formatted}</div>
-      },
+      }
     },
     {
       accessorKey: "active_days_of_wk",
@@ -112,20 +107,25 @@ export function useTabCheckoutColumns(shopId: number): ColumnDef<TabOverview>[] 
       }
     },
     {
-      id: "active",
-      filterFn: (row, _, filterValue: boolean) => {
+      accessorKey: "billing_interval_days",
+      header: () => <div >Billing Interval</div>,
+      cell: ({ row }) => {
         const tab = row.original
-
-        return !filterValue || isTabActiveNow(tab)
-
+        return <div className="">{tab.billing_interval_days} days</div>
       }
     },
     {
-      id: "location",
-      filterFn: (row, _, filterValue: number) => {
+      accessorKey: "payment_method",
+      header: "Payment Method",
+      filterFn: filterInArray
+    },
+    {
+      accessorKey: "payment_details",
+      header: "Payment Details",
+      cell: ({ row }) => {
         const tab = row.original
-        return !filterValue || !!tab.locations.find(v => v.id === filterValue)
+        return tab.payment_details ?? "None"
       }
-    }
-  ] satisfies ColumnDef<TabOverview>[], [shopId])
+    },
+  ] satisfies ColumnDef<TabOverview>[], [])
 }

@@ -11,7 +11,7 @@ export function DialogForm<T extends FieldValues>({ children, title, desc, trigg
     children: React.ReactNode,
     title: string,
     desc: string,
-    trigger: React.ReactNode,
+    trigger?: React.ReactNode,
     shouldClose?: boolean
     open?: boolean
     onOpenChange?: (isOpen: boolean) => void
@@ -33,9 +33,11 @@ export function DialogForm<T extends FieldValues>({ children, title, desc, trigg
   })
 
   return <Dialog open={onOpenChange ? open : intOpen} onOpenChange={onOpenChange ? onOpenChange : setIntOpen}>
-    <DialogTrigger asChild >
-      {trigger}
-    </DialogTrigger>
+    {!!trigger &&
+      <DialogTrigger asChild >
+        {trigger}
+      </DialogTrigger>
+    }
     <DialogContent onInteractOutside={(e) => { if (isDirty) e.preventDefault() }} >
       <Form {...form}>
         <form onSubmit={submitHandler} autoComplete="off" >

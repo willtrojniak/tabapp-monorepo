@@ -6,7 +6,7 @@ import { BadgeAlert, Check } from "lucide-react"
 import { Badge } from "../ui/badge"
 import { filterInArray } from "./table"
 
-export function useTabColumns(shopId: number): ColumnDef<TabOverview>[] {
+export function useTabColumns(): ColumnDef<TabOverview>[] {
   return React.useMemo(() => [
     {
       accessorKey: "id",
@@ -127,5 +127,5 @@ export function useTabColumns(shopId: number): ColumnDef<TabOverview>[] {
         return tab.payment_details ?? "None"
       }
     },
-  ] satisfies ColumnDef<TabOverview>[], [shopId])
+  ] satisfies ColumnDef<TabOverview>[], [])
 }

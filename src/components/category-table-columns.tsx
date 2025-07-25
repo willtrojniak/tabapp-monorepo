@@ -7,12 +7,9 @@ import { DialogDeleteForm } from "./forms/dialog-delete-form";
 import { CategoryFormDialog } from "./forms/category-form";
 import { useDeleteCategory } from "@/api/categories";
 import { toast } from "./ui/use-toast";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { getShopItemsQueryOptions } from "@/api/items";
 
 export function useCategoryColumns(shopId: number): ColumnDef<Category>[] {
   const deleteItem = useDeleteCategory();
-  const { data: items } = useSuspenseQuery(getShopItemsQueryOptions(shopId))
   const onDelete = React.useCallback(async ({ shopId, categoryId }: { shopId: number, categoryId: number }) => {
     await deleteItem.mutateAsync({ shopId, categoryId }, {
       onError: () => {
@@ -46,7 +43,7 @@ export function useCategoryColumns(shopId: number): ColumnDef<Category>[] {
         id: 'edit',
         cell: ({ row }) => {
           const category = row.original
-          return <CategoryFormDialog shopId={shopId} category={category} index={row.index} items={items} >
+          return <CategoryFormDialog shopId={shopId} category={category} index={row.index}>
             <Button variant="ghost"> <Pencil className="h-4 w-4" /> </Button>
           </CategoryFormDialog>
 

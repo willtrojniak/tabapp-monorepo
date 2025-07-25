@@ -80,19 +80,6 @@ function UserFormBody({ control }: {
       )} />
     <FormField
       control={control}
-      name="preferred_name"
-      rules={{}}
-      render={({ field }) => (
-        <FormItem className="grid grid-cols-3 gap-2 items-center">
-          <FormLabel>Preferred Name</FormLabel>
-          <FormControl>
-            <Input {...field} className="col-span-2" />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
-    <FormField
-      control={control}
       name="email"
       rules={{}}
       render={({ field }) => (
@@ -106,11 +93,24 @@ function UserFormBody({ control }: {
       )} />
     <FormField
       control={control}
+      name="preferred_name"
+      rules={{}}
+      render={({ field }) => (
+        <FormItem className="grid grid-cols-3 gap-2 items-center">
+          <FormLabel>Preferred Name</FormLabel>
+          <FormControl>
+            <Input {...field} className="col-span-2" />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )} />
+    <FormField
+      control={control}
       name="enable_emails"
       rules={{}}
       render={({ field }) => (
         <FormItem className="grid grid-cols-3 gap-4 items-center">
-          <FormLabel className="mt-2">Receive Email Notifications</FormLabel>
+          <FormLabel className="mt-2">Email Notifications</FormLabel>
           <FormControl>
             <Checkbox checked={field.value} onCheckedChange={field.onChange} className="col-span-2" />
           </FormControl>

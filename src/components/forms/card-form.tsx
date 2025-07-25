@@ -24,7 +24,7 @@ export function CardForm<T extends FieldValues>({ children, className, title, de
     </CardHeader>
     <Form {...form}>
       <form autoComplete='off' onSubmit={handleSubmit(onSubmit)}>
-        <CardContent>
+        <CardContent className='mb-2'>
           {children}
         </CardContent>
         <CardFooter className="justify-end gap-2">

@@ -1,6 +1,5 @@
 import { PaymentMethod, TabOverview, TabStatus } from "@/types/types";
-import { useTabColumns } from "./tab-columns";
-import { ColumnFiltersState, FilterFn, flexRender, getCoreRowModel, getFilteredRowModel, SortingFn, sortingFns, useReactTable } from "@tanstack/react-table";
+import { ColumnDef, ColumnFiltersState, FilterFn, flexRender, getCoreRowModel, getFilteredRowModel, SortingFn, sortingFns, useReactTable } from "@tanstack/react-table";
 import React from "react";
 import { compareItems, RankingInfo, rankItem } from "@tanstack/match-sorter-utils";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
@@ -45,11 +44,11 @@ export const fuzzySortTab: SortingFn<TabOverview> = (rowA, rowB, columnId) => {
   return dir === 0 ? sortingFns.alphanumeric(rowA, rowB, columnId) : dir
 }
 
-export function TabTable({ shopId, tabs }: {
-  shopId: number,
+export function TabTable({ tabs, columns, uri }: {
+  uri: string,
   tabs: TabOverview[]
+  columns: ColumnDef<TabOverview>[]
 }) {
-  const columns = useTabColumns(shopId)
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([{
     id: "status",
     value: []
@@ -184,7 +183,7 @@ export function TabTable({ shopId, tabs }: {
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}
-                onClick={() => navigate({ to: "/shops/$shopId/tabs/$tabId", hash: 'tab', params: { shopId: row.original.shop_id, tabId: row.original.id } })}
+                onClick={() => navigate({ to: uri, params: { shopId: row.original.shop_id, tabId: row.original.id }, search: { shopId: row.original.shop_id, tabId: row.original.id } })}
                 className="cursor-pointer"
               >
                 {

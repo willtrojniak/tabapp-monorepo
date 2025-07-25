@@ -11,6 +11,7 @@ import { toast } from "../ui/use-toast";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from "../ui/dialog";
 import { Button } from "../ui/button";
 import { RadioGroupItem } from "@radix-ui/react-radio-group";
+import { CardForm } from "./card-form";
 
 function getItemDefaults(item: Item): OrderCreateRaw {
   const data = {
@@ -127,7 +128,23 @@ export function OrderFormDialog({ shopId, tabId, item, open, onOpenChange }: {
       </Form>
     </DialogContent>
   </Dialog>
+}
 
+export function OrderFormCard({ shopId, tabId, item, disabled }: {
+  shopId: number,
+  tabId: number,
+  item: Item
+  disabled?: boolean
+}) {
+  const { form, onSubmit } = useOrderForm({ item, shopId, tabId })
+
+  return < CardForm form={form} onSubmit={onSubmit}
+    disabled={disabled}
+    title={"Preview: " + item.name} desc="Confirm the order details to add or remove from tab." className="flex-1 min-w-72 basis-0">
+    <div className="flex flex-col items-start gap-2 mb-6">
+      <OrderFormBody item={item} control={form.control} />
+    </div>
+  </CardForm >
 }
 
 function OrderFormBody({ item, control }: {

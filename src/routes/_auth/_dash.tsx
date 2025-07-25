@@ -1,44 +1,44 @@
-import { NavigationMenu, NavigationMenuLink } from '@/components/ui/navigation-menu'
-import { } from '@/components/ui/tabs'
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router'
+import { NavigationMenu, NavigationMenuLink } from '@/components/ui/navigation-menu'
 import { Suspense } from 'react'
 
-export const Route = createFileRoute('/_auth/shops/$shopId/_layout')({
-  component: ShopIndexLayoutComponent,
-  beforeLoad: () => ({ title: "" })
+export const Route = createFileRoute('/_auth/_dash')({
+  beforeLoad: () => ({ title: "" }),
+  component: Page
 })
 
-function ShopIndexLayoutComponent() {
-  const { shopId } = Route.useParams()
+function Page() {
 
-  return <div>
-    <NavigationMenu className='bg-muted px-1 py-1 mb-2 rounded-md'>
+  ;
+
+  return <div className='flex-1 flex flex-col p-4'>
+    <NavigationMenu className='bg-muted px-1 py-1 mb-2 rounded-md grow-0'>
       <NavigationMenuLink asChild>
-        <Link to='/shops/$shopId' params={{ shopId }}
+        <Link to='/dash' mask={{ to: '/' }}
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
-          Edit
+          Overview
         </Link>
       </NavigationMenuLink>
       <NavigationMenuLink asChild>
-        <Link to='/shops/$shopId/locations' params={{ shopId }}
+        <Link to='/tabs'
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
-          Locations
+          Tabs
         </Link>
       </NavigationMenuLink>
       <NavigationMenuLink asChild>
-        <Link to='/shops/$shopId/users' params={{ shopId }}
+        <Link to='/shops'
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
-          Users
+          Shops
         </Link>
       </NavigationMenuLink>
       <NavigationMenuLink asChild>
-        <Link to='/shops/$shopId/integrations' params={{ shopId }}
+        <Link to='/profile'
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
-          Integrations
+          Profile
         </Link>
       </NavigationMenuLink>
     </NavigationMenu>
-    <Suspense fallback={"Loading..."}>
+    <Suspense>
       <Outlet />
     </Suspense>
   </div>

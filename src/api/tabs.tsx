@@ -169,3 +169,21 @@ export async function ensureShopTabForId(queryClient: QueryClient, shopId: numbe
 export function invalidateShopTabForId(queryClient: QueryClient, shopId: number, tabId: number) {
   queryClient.invalidateQueries({ queryKey: getShopTabForIdQueryOptions(shopId, tabId).queryKey })
 }
+
+async function getUserTabs() {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/tabs`
+  const response = await axios.get<TabOverview[]>(url)
+  return response.data;
+}
+
+export function getUserTabsQueryOptions() {
+  return { queryKey: ['tabs'], queryFn: () => getUserTabs() } satisfies QueryOptions
+}
+
+export async function ensureUserTabs(queryClient: QueryClient) {
+  return await queryClient.ensureQueryData(getUserTabsQueryOptions())
+}
+
+export function invalidateUserTabs(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: getUserTabsQueryOptions().queryKey })
+}

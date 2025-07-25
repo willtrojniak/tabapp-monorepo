@@ -24,7 +24,6 @@ export function TabCheckoutTable({ shop, data, selectedTab, setSelectedTab }: {
     }
   ])
   const [globalFilter, setGlobalFilter] = React.useState('')
-  const [rowSelection, setRowSelection] = React.useState({})
 
   const table = useReactTable<TabOverview>({
     data,
@@ -39,7 +38,6 @@ export function TabCheckoutTable({ shop, data, selectedTab, setSelectedTab }: {
     getFilteredRowModel: getFilteredRowModel(),
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
     enableMultiRowSelection: false,
     globalFilterFn: 'fuzzy',
     initialState: {
@@ -50,7 +48,6 @@ export function TabCheckoutTable({ shop, data, selectedTab, setSelectedTab }: {
     state: {
       columnFilters,
       globalFilter,
-      rowSelection,
     }
   })
 
@@ -100,12 +97,13 @@ export function TabCheckoutTable({ shop, data, selectedTab, setSelectedTab }: {
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && "selected"}
+                data-state={row.original.id === selectedTab?.id && "selected"}
                 onClick={() => {
-                  row.toggleSelected(true)
-                  setSelectedTab(row.original)
+                  if (selectedTab?.id !== row.original.id) {
+                    setSelectedTab(row.original)
+                  }
                 }}
-                className="cursor-pointer data-[state=selected]:bg-yellow-100 data-[state=selected]:text-black">
+                className={`cursor-pointer data-[state=selected]:bg-yellow-100 data-[state=selected]:text-black`}>
                 {
                   row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
