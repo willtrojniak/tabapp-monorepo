@@ -1,4 +1,3 @@
-import { Category } from "@/types/types";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 
 export function CategoryTabSelect({ categories, value, onValueChange, disabled = false, allowNone = true }: {
@@ -6,10 +5,13 @@ export function CategoryTabSelect({ categories, value, onValueChange, disabled =
   value: string,
   disabled?: boolean,
   onValueChange: (id: string) => void
-  categories: Category[]
+  categories: {
+    id: number,
+    name: string
+  }[]
 }) {
 
-  if (!allowNone && categories.length === 0) return <div>No Categories</div>
+  if (!allowNone && categories.length === 0) return
 
   return <Tabs value={value} onValueChange={onValueChange} className="max-w-full overflow-x-scroll pr-2">
     <TabsList>

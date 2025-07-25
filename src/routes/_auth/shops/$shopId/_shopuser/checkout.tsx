@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_auth/shops/$shopId/_shopuser/checkout')(
   validateSearch: z.object({
     category: z.number().optional(),
     tab: z.number().optional(),
-    modal: z.boolean().default(false),
+    modal: z.boolean().optional().default(false),
   }),
   beforeLoad: () => {
     return { title: "Checkout" }

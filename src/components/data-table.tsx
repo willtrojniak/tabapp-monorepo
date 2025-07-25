@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
 import { ColumnDef, flexRender, getCoreRowModel, getFilteredRowModel, useReactTable } from "@tanstack/react-table";
 
-export function DataTable<TData, TValue>({ columns, data, filteredIds }: {
+export function DataTable<TData extends { id: number | string }, TValue>({ columns, data, filteredIds, selectedId }: {
+  selectedId?: number
   columns: ColumnDef<TData, TValue>[],
   data: TData[],
   filteredIds?: number[]
@@ -45,8 +46,8 @@ export function DataTable<TData, TValue>({ columns, data, filteredIds }: {
           table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              data-state={row.getIsSelected() && "selected"}
-            >
+              data-state={row.original.id === selectedId && "selected"}
+              className={`data-[state=selected]:bg-muted`}>
               {
                 row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

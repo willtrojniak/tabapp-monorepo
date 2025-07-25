@@ -58,7 +58,7 @@ export function useShopForm({ shop }: { shop?: Shop }) {
 export function ShopFormCard({ shop, paymentMethods }: { shop?: Shop, paymentMethods: PaymentMethod[] }) {
   const { form, onSubmit, title, desc } = useShopForm({ shop });
 
-  return <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit}>
+  return <CardForm form={form} title={title} desc={desc} onSubmit={onSubmit} className="flex-grow basis-0 min-w-72">
     <ShopFormBody control={form.control} shop={shop} paymentMethods={paymentMethods} />
   </CardForm>
 

@@ -11,8 +11,8 @@ function Page() {
 
   ;
 
-  return <div className='p-4'>
-    <NavigationMenu className='bg-muted px-1 py-1 mb-2 rounded-md'>
+  return <div className='flex-1 flex flex-col p-4'>
+    <NavigationMenu className='bg-muted px-1 py-1 mb-2 rounded-md grow-0'>
       <NavigationMenuLink asChild>
         <Link to='/dash' mask={{ to: '/' }}
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
@@ -26,7 +26,7 @@ function Page() {
         </Link>
       </NavigationMenuLink>
       <NavigationMenuLink asChild>
-        <Link to='/shops/'
+        <Link to='/shops'
           className='px-2 py-1 rounded-sm hover:cursor-pointer underline-offset-2' activeProps={{ className: "bg-background" }} activeOptions={{ exact: true }}>
           Shops
         </Link>

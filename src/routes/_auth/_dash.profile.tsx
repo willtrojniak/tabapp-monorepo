@@ -16,18 +16,16 @@ function ProfileComponent() {
   const { user } = Route.useRouteContext();
   const auth = useAuth();
 
-  return <div className='flex items-start gap-2'>
-    <div>
-      <Card className='w-fit'>
-        <CardContent>
-          <CardDescription>Signed in as </CardDescription>
-          <CardTitle>{user.preferred_name ?? user.name}</CardTitle>
-        </CardContent>
-        <CardFooter>
-          <Button variant="link" onClick={auth.logout} className='gap-2 w-full text-destructive px-0'><LogOut className='w-4 h-4' /> Sign Out</Button>
-        </CardFooter>
-      </Card>
-    </div>
+  return <div className='flex-1 flex items-stretch gap-2'>
+    <Card>
+      <CardContent className='pb-6'>
+        <CardDescription>Signed in as </CardDescription>
+        <CardTitle>{user.preferred_name ?? user.name}</CardTitle>
+      </CardContent>
+      <Button variant="link" onClick={auth.logout} className='gap-2 w-full text-destructive px-0'><LogOut className='w-4 h-4' /> Sign Out</Button>
+      <CardFooter>
+      </CardFooter>
+    </Card>
     <UserFormCard user={user} className="max-w-2xl" />
   </div>
 }

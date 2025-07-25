@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
 import { API_BASE_URL } from '@/util/constants'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import GoogleButton from 'react-google-button'
@@ -25,11 +25,11 @@ function LoginComponent() {
 
   return <div className='flex flex-col justify-center items-center w-full py-16'>
     <Card className='flex flex-col items-center'>
-      <CardHeader className=''>
-        <CardTitle className='text-center'>CafeTrackr Sign In</CardTitle>
-        <CardDescription className='w-fit text-center'>Sign in to request new tabs and track their status</CardDescription>
-      </CardHeader>
       <CardContent >
+        <CardTitle className='text-center'>CafeTrackr Sign In</CardTitle>
+        <CardDescription className='w-fit text-center'>Sign in to begin managing your tabs!</CardDescription>
+      </CardContent>
+      <CardContent>
         <a href={encodeURI(`${API_BASE_URL}/auth/google?redirect=${search.redirect}`)}
         ><GoogleButton type='light' /></a>
       </CardContent>

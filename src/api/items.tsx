@@ -4,6 +4,7 @@ import { Item, ItemOverview } from "../types/types";
 import { QueryClient, QueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ItemCreate } from "@/types/schemas";
 import { getShopCategoriesQueryOptions } from "./categories";
+import { getShopSubstitutionsQueryOptions } from "./substitutions";
 
 export type ItemUpdateIds = {
   shopId: number
@@ -58,6 +59,7 @@ export function useDeleteItem() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: getShopItemsQueryOptions(variables.shopId).queryKey })
       queryClient.invalidateQueries({ queryKey: getShopCategoriesQueryOptions(variables.shopId).queryKey })
+      queryClient.invalidateQueries({ queryKey: getShopSubstitutionsQueryOptions(variables.shopId).queryKey })
     },
   })
 }

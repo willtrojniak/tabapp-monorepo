@@ -6,7 +6,7 @@ import { useOnErrorToast } from "@/api/toasts";
 import { EditButton } from "./ui/edit-button";
 import { useRemoveShopInvite } from "@/api/shops";
 import { ShopUserFormDialog } from "./forms/shop-user-form";
-import { Check, Crown, Loader, Send, UserRoundCheck } from "lucide-react";
+import { Crown, Send, UserRoundCheck } from "lucide-react";
 
 export function useUserColumns(shopId: number): ColumnDef<ShopUser>[] {
   const onError = useOnErrorToast();
