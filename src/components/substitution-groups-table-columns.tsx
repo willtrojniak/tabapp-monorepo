@@ -45,7 +45,7 @@ export function useSubstitutionGroupColumns(shopId: number): ColumnDef<Substitut
         id: 'edit',
         cell: ({ row }) => {
           const group = row.original
-          return <SubstitutionGroupFormDialog shopId={shopId} group={group} items={items}><EditButton /></SubstitutionGroupFormDialog>
+          return <SubstitutionGroupFormDialog shopId={shopId} group={group}><EditButton /></SubstitutionGroupFormDialog>
         }
       },
       {
