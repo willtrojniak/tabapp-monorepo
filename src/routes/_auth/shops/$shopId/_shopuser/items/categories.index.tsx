@@ -124,7 +124,7 @@ function Page() {
                       onChange={field.onChange}
                       disabled={!editing}
                       render={(item) => (
-                        <Button key={item.id} variant="secondary" className='w-32' type='button'>{item.name}</Button>
+                        <Button key={item.id} variant='secondary' className='w-32 block text-sm text-center overflow-ellipsis overflow-hidden whitespace-nowrap' type='button'>{item.name}</Button>
                       )}
                       trashComponent={<div className='flex-1 basis-1 w-full min-h-32  outline-dashed outline-destructive flex items-center justify-center text-destructive'><div><Trash2 className='m-auto stroke-destructive w-6 h-6' />Remove from category</div></div>}
                     />

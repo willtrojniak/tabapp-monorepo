@@ -64,7 +64,7 @@ function CheckoutComponent() {
       <div className='flex flex-col gap-2 items-start'>
         <CategoryTabSelect value={categoryId?.toString() ?? selectedCategory?.id.toString() ?? ""} onValueChange={onCategoryChange} categories={categories} allowNone={false} />
 
-        <div className='grid  grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @3xl:grid-cols-5 @4xl:grid-cols-6 gap-2'>
+        <div className='grid pr-2 grid-cols-2 @md:grid-cols-3 @xl:grid-cols-4 @3xl:grid-cols-5 @4xl:grid-cols-6 gap-2'>
           {selectedCategory?.items.map(i => (
             <Link
               key={i.id}
@@ -75,7 +75,7 @@ function CheckoutComponent() {
               // mask={{ to: '/shops/$shopId/checkout', params: { shopId }, unmaskOnReload: true }}
               replace={true}
             >
-              <Button disabled={!selectedTab} className='w-fit min-w-full max-w-34' variant="secondary">{i.name}</Button>
+              <Button disabled={!selectedTab} className='block w-fit min-w-full max-w-full overflow-ellipsis overflow-hidden' variant="secondary">{i.name}</Button>
             </Link>
           ))}
           {selectedCategory?.items.length === 0 && <div className='text-muted-foreground text-sm whitespace-nowrap'>No items to display</div>}
