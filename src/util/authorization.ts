@@ -107,7 +107,7 @@ const tabAuthorizeActionFns: Record<TabAction, (user: User, target: { shop: Shop
   [TabAction.UPDATE]: (user, { shop, tab }) => hasShopRole(user, shop, shopRoles.MANAGE_TABS) || (user.id === tab.owner_id && tab.status === TabStatus.pending),
   [TabAction.APPROVE]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_TABS),
   [TabAction.CLOSE]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_TABS),
-  [TabAction.CLOSE_BILL]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_TABS),
+  [TabAction.CLOSE_BILL]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_ORDERS),
   [TabAction.ADD_ORDER]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_ORDERS),
   [TabAction.REMOVE_ORDER]: (user, { shop }) => hasShopRole(user, shop, shopRoles.MANAGE_ORDERS),
 }
