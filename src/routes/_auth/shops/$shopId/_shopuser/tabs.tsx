@@ -22,16 +22,18 @@ function TabComponent() {
   const columns = useTabColumns()
 
   return <>
-    {hasShopRole(user, shop, shopRoles.MANAGE_TABS) &&
+    {hasShopRole(user, shop, shopRoles.MANAGE_ORDERS) &&
       <Card className='max-w-full'>
         <CardHeader>
           <CardTitle>Tabs</CardTitle>
           <CardDescription>Search through and manage tabs.</CardDescription>
-          <CardAction>
-            <TabFormSheet shop={shop}>
-              <CreateButton>Create Tab</CreateButton>
-            </TabFormSheet>
-          </CardAction>
+          {hasShopRole(user, shop, shopRoles.MANAGE_TABS) &&
+            <CardAction>
+              <TabFormSheet shop={shop}>
+                <CreateButton>Create Tab</CreateButton>
+              </TabFormSheet>
+            </CardAction>
+          }
         </CardHeader>
         <CardContent>
           <TabTable tabs={tabs} columns={columns} uri={'/shops/$shopId/tabs/$tabId'} />
