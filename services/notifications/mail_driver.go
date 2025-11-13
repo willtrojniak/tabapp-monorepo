@@ -3,6 +3,7 @@ package notifications
 import (
 	"bytes"
 	"fmt"
+	"log/slog"
 	"net/smtp"
 	"slices"
 	"strings"
@@ -63,12 +64,17 @@ func (driver *MailDriver) NotifyUsers(to []*models.User, n Notification) error {
 		return err
 	}
 
-	return smtp.SendMail(
+	err = smtp.SendMail(
 		driver.addr,
 		driver.auth,
 		driver.from,
 		emails,
 		html)
+	if err != nil {
+		slog.Error("Failed to send mail", "emails", emails, "html", html)
+	}
+
+	return err
 }
 
 func (driver *MailDriver) toHTML(emails []string, n Notification) ([]byte, error) {
