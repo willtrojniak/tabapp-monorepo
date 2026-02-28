@@ -1,6 +1,6 @@
 import axios from "axios";
 import { API_BASE_URL, API_VERSION } from "../util/constants";
-import { QueryClient, QueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, queryOptions, QueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Tab, TabOverview } from "src/types/types";
 import { OrderCreate, TabCreate } from "@/types/schemas";
 
@@ -141,7 +141,13 @@ async function getShopTabs(shopId: number) {
 }
 
 export function getShopTabsQueryOptions(shopId: number) {
-  return { queryKey: ['shops', shopId, 'tabs'], queryFn: () => getShopTabs(shopId) } satisfies QueryOptions
+  const TAB_STALE_TIME = 1000 * 60 * 60;
+  return queryOptions({
+    queryKey: ['shops', shopId, 'tabs'],
+    queryFn: () => getShopTabs(shopId),
+    staleTime: TAB_STALE_TIME,
+    refetchInterval: TAB_STALE_TIME,
+  })
 }
 
 export async function ensureShopTabs(queryClient: QueryClient, shopId: number) {
