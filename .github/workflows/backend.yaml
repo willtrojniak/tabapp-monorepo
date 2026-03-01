@@ -35,4 +35,4 @@ jobs:
 
       - name: Build and push the Docker image
         run: |
-          docker buildx build --push --platform linux/arm64 --tag ${{ vars.REGISTRY }}/${{ github.repository_owner }}/${{ vars.BACKEND_IMAGE_NAME }}:latest .
+          docker buildx build --push --platform linux/arm64 --tag ${{ vars.REGISTRY }}/${{ github.repository }}/${{ vars.BACKEND_IMAGE_NAME }}:latest .
