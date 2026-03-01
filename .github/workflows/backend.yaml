@@ -8,15 +8,16 @@ on:
     paths:
       - "backend/**"
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
-    permissions:
-      contents: read
-      packages: write
 
     steps:
       - name: Checkout
