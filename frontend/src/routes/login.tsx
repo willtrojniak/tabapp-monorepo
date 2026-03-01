@@ -1,0 +1,38 @@
+import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card'
+import { API_BASE_URL } from '@/util/constants'
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import GoogleButton from 'react-google-button'
+import { z } from 'zod'
+
+export const Route = createFileRoute('/login')({
+  validateSearch: z.object({
+    redirect: z.string().optional()
+  }),
+  component: LoginComponent,
+  beforeLoad: ({ context, search }) => {
+    if (context.auth.isAuthenticated) {
+      throw redirect({
+        to: search.redirect ?? "/",
+        replace: true
+      })
+    }
+    return { title: "Sign In" }
+  }
+})
+
+function LoginComponent() {
+  const search = Route.useSearch()
+
+  return <div className='flex flex-col justify-center items-center w-full py-16'>
+    <Card className='flex flex-col items-center'>
+      <CardContent >
+        <CardTitle className='text-center'>CafeTrackr Sign In</CardTitle>
+        <CardDescription className='w-fit text-center'>Sign in to begin managing your tabs!</CardDescription>
+      </CardContent>
+      <CardContent>
+        <a href={encodeURI(`${API_BASE_URL}/auth/google?redirect=${search.redirect}`)}
+        ><GoogleButton type='light' /></a>
+      </CardContent>
+    </Card>
+  </div>
+}

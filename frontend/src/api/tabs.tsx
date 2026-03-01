@@ -1,0 +1,195 @@
+import axios from "axios";
+import { API_BASE_URL, API_VERSION } from "../util/constants";
+import { QueryClient, queryOptions, QueryOptions, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Tab, TabOverview } from "src/types/types";
+import { OrderCreate, TabCreate } from "@/types/schemas";
+
+async function createTab({ shopId, data }: {
+  shopId: number,
+  data: TabCreate
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs`
+  return axios.post(url, data)
+}
+
+export function useCreateTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabsQueryOptions(variables.shopId).queryKey })
+    },
+  })
+}
+
+async function updateTab({ shopId, tabId, data }: {
+  shopId: number,
+  tabId: number,
+  data: TabCreate
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}`
+  return axios.patch(url, data)
+}
+
+export function useUpdateTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabsQueryOptions(variables.shopId).queryKey })
+    },
+  })
+}
+
+async function approveTab({ shopId, tabId }: {
+  shopId: number,
+  tabId: number,
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}/approve`
+  return axios.post(url)
+}
+
+export function useApproveTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: approveTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabsQueryOptions(variables.shopId).queryKey })
+    }
+  })
+}
+
+async function closeTab({ shopId, tabId }: {
+  shopId: number,
+  tabId: number,
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}/close`
+  return axios.post(url)
+}
+
+export function useCloseTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: closeTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabsQueryOptions(variables.shopId).queryKey })
+    }
+  })
+}
+
+async function addOrderToTab({ shopId, tabId, data }: {
+  shopId: number,
+  tabId: number,
+  data: OrderCreate
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}/add-order`
+  return axios.post(url, data)
+}
+
+export function useAddOrderToTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: addOrderToTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabForIdQueryOptions(variables.shopId, variables.tabId).queryKey })
+    },
+  })
+}
+
+async function removeOrderFromTab({ shopId, tabId, data }: {
+  shopId: number,
+  tabId: number,
+  data: OrderCreate
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}/remove-order`
+  return axios.post(url, data)
+}
+
+export function useRemoveOrderFromTab() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: removeOrderFromTab,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabForIdQueryOptions(variables.shopId, variables.tabId).queryKey })
+    },
+  })
+}
+
+async function closeBill({ shopId, tabId, billId }: {
+  shopId: number,
+  tabId: number,
+  billId: number
+}) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}/bills/${billId}/close`
+  return axios.post(url)
+}
+
+export function useCloseBill() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: closeBill,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: getShopTabForIdQueryOptions(variables.shopId, variables.tabId).queryKey })
+    },
+  })
+}
+
+async function getShopTabs(shopId: number) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs`
+  const response = await axios.get<TabOverview[]>(url)
+  return response.data;
+}
+
+export function getShopTabsQueryOptions(shopId: number) {
+  const TAB_STALE_TIME = 1000 * 60 * 60;
+  return queryOptions({
+    queryKey: ['shops', shopId, 'tabs'],
+    queryFn: () => getShopTabs(shopId),
+    staleTime: TAB_STALE_TIME,
+    refetchInterval: TAB_STALE_TIME,
+  })
+}
+
+export async function ensureShopTabs(queryClient: QueryClient, shopId: number) {
+  return await queryClient.ensureQueryData(getShopTabsQueryOptions(shopId))
+}
+
+export function invalidateShopTabs(queryClient: QueryClient, shopId: number) {
+  queryClient.invalidateQueries({ queryKey: getShopTabsQueryOptions(shopId).queryKey })
+}
+
+async function getShopTabForId(shopId: number, tabId: number) {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/shops/${shopId}/tabs/${tabId}`
+  const response = await axios.get<Tab>(url)
+  return response.data;
+}
+
+export function getShopTabForIdQueryOptions(shopId: number, tabId: number) {
+  return { queryKey: ['shops', shopId, 'tabs', tabId], queryFn: () => getShopTabForId(shopId, tabId) } satisfies QueryOptions
+}
+
+export async function ensureShopTabForId(queryClient: QueryClient, shopId: number, tabId: number) {
+  return await queryClient.ensureQueryData(getShopTabForIdQueryOptions(shopId, tabId))
+}
+
+export function invalidateShopTabForId(queryClient: QueryClient, shopId: number, tabId: number) {
+  queryClient.invalidateQueries({ queryKey: getShopTabForIdQueryOptions(shopId, tabId).queryKey })
+}
+
+async function getUserTabs() {
+  const url = `${API_BASE_URL}/api/${API_VERSION}/tabs`
+  const response = await axios.get<TabOverview[]>(url)
+  return response.data;
+}
+
+export function getUserTabsQueryOptions() {
+  return { queryKey: ['tabs'], queryFn: () => getUserTabs() } satisfies QueryOptions
+}
+
+export async function ensureUserTabs(queryClient: QueryClient) {
+  return await queryClient.ensureQueryData(getUserTabsQueryOptions())
+}
+
+export function invalidateUserTabs(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: getUserTabsQueryOptions().queryKey })
+}

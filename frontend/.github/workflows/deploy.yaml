@@ -1,0 +1,49 @@
+name: S3 Build and Deploy
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: "us-east-1"
+  BUCKET_NAME: "tabapp-frontend"
+  CF_DIST_ID: E22QDAQNFPNWOQ
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository 
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: arn:aws:iam::181932585177:role/Github-OIDC-Role
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: |
+          VITE_BUILD="${{ github.sha }}" yarn build
+
+      - name: Deploy to s3 bucket
+        run: |
+          aws s3 sync --delete ./dist s3://${{ env.BUCKET_NAME }}/
+
+      - name: Invalidate cloudfront distribution
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ env.CF_DIST_ID }} --paths "/*"
