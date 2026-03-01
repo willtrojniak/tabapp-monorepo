@@ -4,9 +4,9 @@ import (
 	"context"
 	"slices"
 
-	"github.com/willtrojniak/TabAppBackend/db"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/db"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
 )
 
 type ReportHandler struct {

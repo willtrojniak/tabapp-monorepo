@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
 func (q *PgxQueries) CreateUser(ctx context.Context, data *models.UserCreate) (*models.User, error) {

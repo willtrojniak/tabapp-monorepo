@@ -14,7 +14,7 @@ import (
 	"cloud.google.com/go/civil"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/willtrojniak/TabAppBackend/services"
+	"github.com/willtrojniak/tabapp-monorepo/services"
 )
 
 var Validate *validator.Validate

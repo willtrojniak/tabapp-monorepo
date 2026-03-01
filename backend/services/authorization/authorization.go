@@ -3,7 +3,7 @@ package authorization
 import (
 	"fmt"
 
-	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
 type Action string

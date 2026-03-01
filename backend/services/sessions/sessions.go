@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/willtrojniak/TabAppBackend/cache"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services"
-	"github.com/willtrojniak/TabAppBackend/util"
+	"github.com/willtrojniak/tabapp-monorepo/cache"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services"
+	"github.com/willtrojniak/tabapp-monorepo/util"
 	"slices"
 )
 

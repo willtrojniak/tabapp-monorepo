@@ -2,8 +2,8 @@ package models
 
 import (
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/willtrojniak/TabAppBackend/env"
-	"github.com/willtrojniak/TabAppBackend/util"
+	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/util"
 )
 
 type Token string

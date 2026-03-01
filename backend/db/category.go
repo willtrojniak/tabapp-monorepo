@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services"
 )
 
 func (q *PgxQueries) CreateCategory(ctx context.Context, data *models.CategoryCreate) error {

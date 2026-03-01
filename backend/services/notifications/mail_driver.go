@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
 type MailDriver struct {

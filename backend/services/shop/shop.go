@@ -4,13 +4,13 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/willtrojniak/TabAppBackend/db"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services"
-	"github.com/willtrojniak/TabAppBackend/services/auth"
-	"github.com/willtrojniak/TabAppBackend/services/authorization"
-	"github.com/willtrojniak/TabAppBackend/services/events"
-	"github.com/willtrojniak/TabAppBackend/services/sessions"
+	"github.com/willtrojniak/tabapp-monorepo/db"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services"
+	"github.com/willtrojniak/tabapp-monorepo/services/auth"
+	"github.com/willtrojniak/tabapp-monorepo/services/authorization"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/services/sessions"
 )
 
 type Handler struct {

@@ -1,4 +1,4 @@
-module github.com/willtrojniak/TabAppBackend
+module github.com/willtrojniak/tabapp-monorepo
 
 go 1.24.3
 

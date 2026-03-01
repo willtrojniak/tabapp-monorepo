@@ -10,11 +10,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
-	"github.com/willtrojniak/TabAppBackend/cmd/api"
-	"github.com/willtrojniak/TabAppBackend/db"
-	"github.com/willtrojniak/TabAppBackend/env"
-	"github.com/willtrojniak/TabAppBackend/services/events"
-	"github.com/willtrojniak/TabAppBackend/services/notifications"
+	"github.com/willtrojniak/tabapp-monorepo/cmd/api"
+	"github.com/willtrojniak/tabapp-monorepo/db"
+	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/services/notifications"
 )
 
 var logLevels = map[string]slog.Level{

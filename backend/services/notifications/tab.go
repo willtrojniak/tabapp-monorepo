@@ -3,10 +3,10 @@ package notifications
 import (
 	"fmt"
 
-	"github.com/willtrojniak/TabAppBackend/env"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services/authorization"
-	"github.com/willtrojniak/TabAppBackend/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services/authorization"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
 )
 
 type TabRequestNotification struct {

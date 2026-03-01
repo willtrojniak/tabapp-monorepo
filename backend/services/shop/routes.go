@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/willtrojniak/TabAppBackend/env"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services"
-	"github.com/willtrojniak/TabAppBackend/services/sessions"
+	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services"
+	"github.com/willtrojniak/tabapp-monorepo/services/sessions"
 	"golang.org/x/oauth2"
 )
 

@@ -3,7 +3,7 @@ package authorization
 import (
 	"slices"
 
-	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
 type shopAuthorizeFn = authorizeFn[models.Shop]

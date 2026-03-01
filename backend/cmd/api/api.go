@@ -9,16 +9,16 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/robfig/cron/v3"
-	"github.com/willtrojniak/TabAppBackend/cache"
-	"github.com/willtrojniak/TabAppBackend/db"
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services"
-	"github.com/willtrojniak/TabAppBackend/services/auth"
-	"github.com/willtrojniak/TabAppBackend/services/events"
-	"github.com/willtrojniak/TabAppBackend/services/reports"
-	"github.com/willtrojniak/TabAppBackend/services/sessions"
-	"github.com/willtrojniak/TabAppBackend/services/shop"
-	"github.com/willtrojniak/TabAppBackend/services/user"
+	"github.com/willtrojniak/tabapp-monorepo/cache"
+	"github.com/willtrojniak/tabapp-monorepo/db"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services"
+	"github.com/willtrojniak/tabapp-monorepo/services/auth"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/services/reports"
+	"github.com/willtrojniak/tabapp-monorepo/services/sessions"
+	"github.com/willtrojniak/tabapp-monorepo/services/shop"
+	"github.com/willtrojniak/tabapp-monorepo/services/user"
 )
 
 type APIServer struct {

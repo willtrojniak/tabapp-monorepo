@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/slack-go/slack"
-	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
 type SlackDriver struct{}

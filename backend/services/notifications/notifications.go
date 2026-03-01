@@ -3,8 +3,8 @@ package notifications
 import (
 	"log/slog"
 
-	"github.com/willtrojniak/TabAppBackend/models"
-	"github.com/willtrojniak/TabAppBackend/services/events"
+	"github.com/willtrojniak/tabapp-monorepo/models"
+	"github.com/willtrojniak/tabapp-monorepo/services/events"
 )
 
 type NotificationData struct {
