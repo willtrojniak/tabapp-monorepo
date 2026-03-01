@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS shops (
+  id SERIAL NOT NULL,
+  owner_id VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+
+  PRIMARY KEY(id),
+  FOREIGN KEY(owner_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE(owner_id, name)
+);

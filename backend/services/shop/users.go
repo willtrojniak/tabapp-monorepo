@@ -1,0 +1,61 @@
+package shop
+
+import (
+	"context"
+
+	"github.com/willtrojniak/TabAppBackend/db"
+	"github.com/willtrojniak/TabAppBackend/models"
+	"github.com/willtrojniak/TabAppBackend/services"
+	"github.com/willtrojniak/TabAppBackend/services/authorization"
+	"github.com/willtrojniak/TabAppBackend/services/sessions"
+)
+
+func (h *Handler) InviteUserToShop(ctx context.Context, session *sessions.AuthedSession, shopId int, userData *models.ShopUserCreate) error {
+	err := models.ValidateData(userData, h.logger)
+	if err != nil {
+		return err
+	}
+	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_INVITE_USER, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
+		owner, err := pq.GetUser(ctx, shop.OwnerId)
+		if err != nil {
+			return err
+		}
+
+		// Dissallow inviting the shop owner as a member
+		if owner.Email == userData.Email {
+			return services.NewDataConflictServiceError(nil)
+		}
+
+		return pq.AddUserToShop(ctx, shopId, userData)
+	})
+}
+
+func (h *Handler) RemoveUserFromShop(ctx context.Context, session *sessions.AuthedSession, shopId int, data *models.ShopUserCreate) error {
+	err := models.ValidateData(data, h.logger)
+	if err != nil {
+		return err
+	}
+	err = db.WithTx(ctx, h.store, func(pq *db.PgxQueries) error {
+		user, err := pq.GetUser(ctx, session.UserId)
+		if err != nil {
+			return err
+		}
+		if user.Email != data.Email {
+			return services.NewUnauthorizedServiceError(nil)
+		}
+		return pq.RemoveUserFromShop(ctx, shopId, data)
+	})
+	if err == nil {
+		return nil
+	}
+
+	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_REMOVE_USER, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
+		return pq.RemoveUserFromShop(ctx, shopId, data)
+	})
+}
+
+func (h *Handler) AcceptInviteToShop(ctx context.Context, session *sessions.AuthedSession, shopId int) error {
+	return db.WithTx(ctx, h.store, func(pq *db.PgxQueries) error {
+		return pq.ConfirmShopInvite(ctx, shopId, session.UserId)
+	})
+}
