@@ -10,12 +10,15 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/internal/encryptor"
 )
 
 func main() {
 
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
 	migrationsPath := "file:///migrations"
+
+	encryptor.SetDefaultEncryptor(encryptor.NewAESEncryptor([]byte(env.Envs.ENCRYPT_SECRET)))
 
 	m, err := migrate.New(migrationsPath, databaseURL)
 	if err != nil {

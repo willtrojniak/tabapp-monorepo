@@ -13,6 +13,7 @@ import (
 	"github.com/willtrojniak/tabapp-monorepo/cmd/api"
 	"github.com/willtrojniak/tabapp-monorepo/db"
 	"github.com/willtrojniak/tabapp-monorepo/env"
+	"github.com/willtrojniak/tabapp-monorepo/internal/encryptor"
 	"github.com/willtrojniak/tabapp-monorepo/services/events"
 	"github.com/willtrojniak/tabapp-monorepo/services/notifications"
 )
@@ -24,6 +25,7 @@ var logLevels = map[string]slog.Level{
 func main() {
 
 	slog.SetLogLoggerLevel(logLevels[env.DEV])
+	encryptor.SetDefaultEncryptor(encryptor.NewAESEncryptor([]byte(env.Envs.ENCRYPT_SECRET)))
 
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
 	pgConfig, err := pgxpool.ParseConfig(databaseURL)

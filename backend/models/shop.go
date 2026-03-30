@@ -77,8 +77,8 @@ func (shop *Shop) ConfirmedUsers() []*User {
 }
 
 type ShopSlackData struct {
-	SlackAccessToken *Token `json:"-" db:"slack_access_token"`
-	SlackIntegrated  bool   `json:"slack_integrated" db:"slack_integrated"`
+	SlackAccessToken *SecureString `json:"-" db:"slack_access_token"`
+	SlackIntegrated  bool          `json:"slack_integrated" db:"slack_integrated"`
 	ShopSlackDataUpdate
 }
 
