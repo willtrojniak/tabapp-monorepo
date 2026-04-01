@@ -48,7 +48,7 @@ func NewAPIServer(
 func (s *APIServer) Run() error {
 
 	sessionStore := cache.NewRedisCache(s.cache)
-	sessionManager := sessions.New(sessionStore, time.Hour*24*30, time.Hour*1, services.HandleHttpError, slog.Default())
+	sessionManager := sessions.NewSessionsManager(sessionStore, time.Hour*24*30, time.Hour*1, services.HandleHttpError)
 	userHandler := user.NewHandler(s.store, sessionManager, services.HandleHttpError, slog.Default())
 
 	authHandler, err := auth.NewHandler(services.HandleHttpError, sessionManager, userHandler, slog.Default())
@@ -66,8 +66,7 @@ func (s *APIServer) Run() error {
 	userHandler.RegisterRoutes(v1)
 	shopHandler.RegisterRoutes(v1)
 
-	router.Handle("/api/v1/", http.StripPrefix("/api/v1", WithMiddleware(
-		sessionManager.RequireAuth)(v1)))
+	router.Handle("/api/v1/", http.StripPrefix("/api/v1", WithMiddleware()(v1)))
 
 	tz, _ := time.LoadLocation("America/New_York")
 	c := cron.New(cron.WithLocation(tz))
@@ -89,5 +88,12 @@ func (s *APIServer) Run() error {
 	c.Start()
 	defer c.Stop()
 
-	return http.ListenAndServe(s.addr, WithMiddleware(RequestLoggerMiddleware, CORSMiddleware, sessionManager.RequireCSRFToken)(router))
+	return http.ListenAndServe(s.addr,
+		WithMiddleware(
+			RequestLoggerMiddleware,
+			CORSMiddleware,
+			func(next http.Handler) http.HandlerFunc {
+				return sessions.HandleHTTPSessionError(sessionManager.RequireCSRFToken(next))
+			},
+		)(router))
 }

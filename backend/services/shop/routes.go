@@ -26,70 +26,73 @@ const (
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	h.logger.Info("Registering shop routes")
-	router.HandleFunc("POST /shops", h.sessions.WithAuthedSession(h.handleCreateShop))
-	router.HandleFunc("GET /shops", h.sessions.WithAuthedSession(h.handleGetShops))
-	router.HandleFunc("GET /tabs", h.sessions.WithAuthedSession(h.handleGetTabs))
+	sessionMux := h.sessions.NewSessionServeMux(sessions.HandleHTTPSessionError)
+	router.Handle("", sessionMux)
+
+	sessionMux.HandleFunc("POST /shops", h.handleCreateShop)
+	sessionMux.HandleFunc("GET /shops", h.handleGetShops)
+	sessionMux.HandleFunc("GET /tabs", h.handleGetTabs)
 
 	// Slack
-	router.HandleFunc(fmt.Sprintf("GET /auth/slack/shops/{%v}", shopIdParam), h.sessions.WithAuthedSession(h.handleBeginInstallSlack))
-	router.HandleFunc(fmt.Sprintf("GET /auth/slack/callback/shops/{%v}", shopIdParam), h.sessions.WithAuthedSession(h.handleInstallSlackCallback))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/slack/channels", shopIdParam), h.sessions.WithAuthedSession(h.handleGetSlackChannels))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/slack/channels", shopIdParam), h.sessions.WithAuthedSession(h.handleUpdateSlackChannels))
+	sessionMux.HandleFunc(fmt.Sprintf("GET /auth/slack/shops/{%v}", shopIdParam), h.handleBeginInstallSlack)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /auth/slack/callback/shops/{%v}", shopIdParam), h.handleInstallSlackCallback)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/slack/channels", shopIdParam), h.handleGetSlackChannels)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/slack/channels", shopIdParam), h.handleUpdateSlackChannels)
 
 	// Payment Methods
-	router.HandleFunc("GET /payment-methods", h.sessions.WithAuthedSession(h.handleGetPaymentMethods))
+	sessionMux.HandleFunc("GET /payment-methods", h.handleGetPaymentMethods)
 
 	// Shops
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}", shopIdParam), h.sessions.WithAuthedSession(h.handleGetShopById))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}", shopIdParam), h.sessions.WithAuthedSession(h.handleUpdateShop))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}", shopIdParam), h.sessions.WithAuthedSession(h.handleDeleteShop))
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}", shopIdParam), h.handleGetShopById)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}", shopIdParam), h.handleUpdateShop)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}", shopIdParam), h.handleDeleteShop)
 
 	// Users & Permissions
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/users/invite", shopIdParam), h.sessions.WithAuthedSession(h.handleInviteUser))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/users/remove", shopIdParam), h.sessions.WithAuthedSession(h.handleRemoveUser))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/accept", shopIdParam), h.sessions.WithAuthedSession(h.handleAcceptInvite))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/users/invite", shopIdParam), h.handleInviteUser)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/users/remove", shopIdParam), h.handleRemoveUser)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/accept", shopIdParam), h.handleAcceptInvite)
 
 	// Locations
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/locations", shopIdParam), h.sessions.WithAuthedSession(h.handleCreateLocation))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/locations/{%v}", shopIdParam, locationIdParam), h.sessions.WithAuthedSession(h.handleUpdateLocation))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/locations/{%v}", shopIdParam, locationIdParam), h.sessions.WithAuthedSession(h.handleDeleteLocation))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/locations", shopIdParam), h.handleCreateLocation)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/locations/{%v}", shopIdParam, locationIdParam), h.handleUpdateLocation)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/locations/{%v}", shopIdParam, locationIdParam), h.handleDeleteLocation)
 
 	// Categories
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/categories", shopIdParam), h.sessions.WithAuthedSession(h.handleCreateCategory))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/categories", shopIdParam), h.sessions.WithAuthedSession(h.handleGetCategories))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/categories/{%v}", shopIdParam, categoryIdParam), h.sessions.WithAuthedSession(h.handleUpdateCategory))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/categories/{%v}", shopIdParam, categoryIdParam), h.sessions.WithAuthedSession(h.handleDeleteCategory))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/categories", shopIdParam), h.handleCreateCategory)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/categories", shopIdParam), h.handleGetCategories)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/categories/{%v}", shopIdParam, categoryIdParam), h.handleUpdateCategory)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/categories/{%v}", shopIdParam, categoryIdParam), h.handleDeleteCategory)
 
 	// Items
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/items", shopIdParam), h.sessions.WithAuthedSession(h.handleCreateItem))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/items", shopIdParam), h.sessions.WithAuthedSession(h.handleGetItems))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.sessions.WithAuthedSession(h.handleUpdateItem))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.sessions.WithAuthedSession(h.handleGetItem))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.sessions.WithAuthedSession(h.handleDeleteItem))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/items", shopIdParam), h.handleCreateItem)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/items", shopIdParam), h.handleGetItems)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.handleUpdateItem)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.handleGetItem)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/items/{%v}", shopIdParam, itemIdParam), h.handleDeleteItem)
 
 	// Item Variants
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/items/{%v}/variants", shopIdParam, itemIdParam), h.sessions.WithAuthedSession(h.handleCreateItemVariant))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/items/{%v}/variants/{%v}", shopIdParam, itemIdParam, itemVariantIdParam), h.sessions.WithAuthedSession(h.handleUpdateItemVariant))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/items/{%v}/variants/{%v}", shopIdParam, itemIdParam, itemVariantIdParam), h.sessions.WithAuthedSession(h.handleDeleteItemVariant))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/items/{%v}/variants", shopIdParam, itemIdParam), h.handleCreateItemVariant)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/items/{%v}/variants/{%v}", shopIdParam, itemIdParam, itemVariantIdParam), h.handleUpdateItemVariant)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/items/{%v}/variants/{%v}", shopIdParam, itemIdParam, itemVariantIdParam), h.handleDeleteItemVariant)
 
 	// Item Substitution Groups
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/substitutions", shopIdParam), h.sessions.WithAuthedSession(h.handleCreateSubstitutionGroup))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/substitutions", shopIdParam), h.sessions.WithAuthedSession(h.handleGetSubstitutionGroups))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/substitutions/{%v}", shopIdParam, substitutionGroupIdParam), h.sessions.WithAuthedSession(h.handleUpdateSubstitutionGroup))
-	router.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/substitutions/{%v}", shopIdParam, substitutionGroupIdParam), h.sessions.WithAuthedSession(h.handleDeleteSubstitutionGroup))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/substitutions", shopIdParam), h.handleCreateSubstitutionGroup)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/substitutions", shopIdParam), h.handleGetSubstitutionGroups)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/substitutions/{%v}", shopIdParam, substitutionGroupIdParam), h.handleUpdateSubstitutionGroup)
+	sessionMux.HandleFunc(fmt.Sprintf("DELETE /shops/{%v}/substitutions/{%v}", shopIdParam, substitutionGroupIdParam), h.handleDeleteSubstitutionGroup)
 
 	// Tabs
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs", shopIdParam), h.sessions.WithAuthedSession(h.handleCreateTab))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/tabs", shopIdParam), h.sessions.WithAuthedSession(h.handleGetTabsForShop))
-	router.HandleFunc(fmt.Sprintf("GET /shops/{%v}/tabs/{%v}", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleGetTabById))
-	router.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/tabs/{%v}", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleUpdateTab))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/approve", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleApproveTab))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/close", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleCloseTab))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/bills/{%v}/close", shopIdParam, tabIdParam, billIdParam), h.sessions.WithAuthedSession(h.handleCloseTabBill))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs", shopIdParam), h.handleCreateTab)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/tabs", shopIdParam), h.handleGetTabsForShop)
+	sessionMux.HandleFunc(fmt.Sprintf("GET /shops/{%v}/tabs/{%v}", shopIdParam, tabIdParam), h.handleGetTabById)
+	sessionMux.HandleFunc(fmt.Sprintf("PATCH /shops/{%v}/tabs/{%v}", shopIdParam, tabIdParam), h.handleUpdateTab)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/approve", shopIdParam, tabIdParam), h.handleApproveTab)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/close", shopIdParam, tabIdParam), h.handleCloseTab)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/bills/{%v}/close", shopIdParam, tabIdParam, billIdParam), h.handleCloseTabBill)
 
 	// Orders
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/add-order", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleAddOrderToTab))
-	router.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/remove-order", shopIdParam, tabIdParam), h.sessions.WithAuthedSession(h.handleRemoveOrderFromTab))
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/add-order", shopIdParam, tabIdParam), h.handleAddOrderToTab)
+	sessionMux.HandleFunc(fmt.Sprintf("POST /shops/{%v}/tabs/{%v}/remove-order", shopIdParam, tabIdParam), h.handleRemoveOrderFromTab)
 
 }
 
