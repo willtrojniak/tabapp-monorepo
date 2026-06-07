@@ -26,8 +26,11 @@ const (
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	h.logger.Info("Registering shop routes")
-	sessionMux := h.sessions.NewSessionServeMux(sessions.HandleHTTPSessionError)
-	router.Handle("", sessionMux)
+	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError)
+	router.Handle("/shops", sessionMux)
+	router.Handle("/tabs", sessionMux)
+	router.Handle("/shops/", sessionMux)
+	router.Handle("/tabs/", sessionMux)
 
 	sessionMux.HandleFunc("POST /shops", h.handleCreateShop)
 	sessionMux.HandleFunc("GET /shops", h.handleGetShops)

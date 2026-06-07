@@ -12,8 +12,9 @@ const userIdPath = "userId"
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	h.logger.Info("Registering user routes")
-	sessionMux := h.sessions.NewSessionServeMux(sessions.HandleHTTPSessionError)
-	router.Handle("", sessionMux)
+	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError)
+	router.Handle("/users", sessionMux)
+	router.Handle("/users/", sessionMux)
 
 	sessionMux.HandleFunc("GET /users", h.handleGetUser)
 	sessionMux.HandleFunc("PATCH /users", h.handleUpdateUser)
