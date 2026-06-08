@@ -290,8 +290,7 @@ func (s *Handler) getSessionFromStore(ctx context.Context, id string) (*Session,
 
 // Convert a general session into an authenticated one
 //
-// Returns an error of type ErrSessionNotAuthed if the session
-// can not be authenticated
+// Returns false if the session cannot be authenticated
 func (s *Session) Authed() (*AuthedSession, bool) {
 	if s.data.UserId == "" {
 		return nil, false
