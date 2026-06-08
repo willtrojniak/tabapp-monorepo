@@ -295,7 +295,7 @@ func (pq *PgxQueries) GetShopUsers(ctx context.Context, shopId int) ([]models.Sh
 	return users, nil
 }
 
-func (pq *PgxQueries) AddShopSlackToken(ctx context.Context, shopId int, accessToken models.Token) error {
+func (pq *PgxQueries) AddShopSlackToken(ctx context.Context, shopId int, accessToken models.SecureString) error {
 	res, err := pq.tx.Exec(ctx, `
 		INSERT INTO shop_slack_connections (shop_id, slack_access_token)
     VALUES (@shopId, @slackAccessToken)

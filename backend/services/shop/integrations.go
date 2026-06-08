@@ -14,7 +14,7 @@ import (
 
 func (h *Handler) InstallSlack(ctx context.Context, session *sessions.AuthedSession, shopId int, token *oauth2.Token) error {
 	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_INSTALL_SLACK, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
-		return pq.AddShopSlackToken(ctx, shopId, models.Token(token.AccessToken))
+		return pq.AddShopSlackToken(ctx, shopId, models.SecureString(token.AccessToken))
 	})
 }
 

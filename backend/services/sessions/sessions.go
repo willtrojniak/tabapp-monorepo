@@ -4,16 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
+	"slices"
+
 	"github.com/willtrojniak/tabapp-monorepo/cache"
 	"github.com/willtrojniak/tabapp-monorepo/models"
 	"github.com/willtrojniak/tabapp-monorepo/services"
 	"github.com/willtrojniak/tabapp-monorepo/util"
-	"slices"
 )
 
 const (
@@ -35,7 +37,6 @@ type sessionData struct {
 type Session struct {
 	data sessionData
 	Id   string
-	ttl  time.Duration
 }
 
 type AuthedSession struct {
@@ -44,30 +45,65 @@ type AuthedSession struct {
 }
 
 type Handler struct {
-	logger      *slog.Logger
-	store       cache.Cache
-	authTTL     time.Duration
-	unauthTTL   time.Duration
-	handleError services.HTTPErrorHandler
+	store     cache.Cache
+	authTTL   time.Duration
+	unauthTTL time.Duration
 }
 
-func New(store cache.Cache, authTTL time.Duration, unauthTTL time.Duration, h services.HTTPErrorHandler, logger *slog.Logger) *Handler {
+var ErrSessionNotAuthed = SessionNotAuthedError{}
+var ErrNoSession = NoSessionError{}
+var ErrNoCSRFToken = NoCSRFTokenError{}
+var ErrCSRFMismatch = CSRFMismatchError{}
+var ErrIpMismatch = IpMismatchError{}
+
+type SessionNotAuthedError struct{}
+type NoSessionError struct{}
+type NoCSRFTokenError struct{}
+type CSRFMismatchError struct {
+	stored string
+	seen   string
+}
+type IpMismatchError struct{}
+
+func (e SessionNotAuthedError) Error() string {
+	return "Session not authenticated"
+}
+
+func (e NoSessionError) Error() string {
+	return "No session data"
+}
+
+func (e NoCSRFTokenError) Error() string {
+	return "No CSRF token"
+}
+
+func (e CSRFMismatchError) Error() string {
+	return fmt.Sprintf("Request CSRF Token (%s) did not match stored (%s)", e.seen, e.stored)
+}
+
+func (e CSRFMismatchError) Is(target error) bool {
+	return target == ErrCSRFMismatch
+}
+
+func (e IpMismatchError) Error() string {
+	return "Ip mismatch on session"
+}
+
+func NewSessionsManager(store cache.Cache, authTTL time.Duration, unauthTTL time.Duration, h services.HTTPErrorHandler) *Handler {
 
 	return &Handler{
-		logger:      logger,
-		store:       store,
-		authTTL:     authTTL,
-		unauthTTL:   unauthTTL,
-		handleError: h,
+		store:     store,
+		authTTL:   authTTL,
+		unauthTTL: unauthTTL,
 	}
 }
 
 func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *models.User) (*Session, error) {
 	ip := readUserIP(r)
 
-	session, err := s.newSessionFromUser(ip, user)
+	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		s.logger.Debug("Error while creating new session.")
+		slog.Warn("Error while creating new session.")
 		return nil, err
 	}
 
@@ -76,25 +112,25 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		return nil, err
 	}
 
-	oldSessionId, err := s.getSessionIdFromRequest(r)
-	if err == nil { // i.e The client has a previous saved session
-		err = s.store.Delete(r.Context(), oldSessionId)
+	if oldSessionId, ok := getSessionIdFromRequest(r); ok {
+		// The client has a previous saved session
+		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			s.logger.Warn("Failed to delete old session from store.", "sessionId", oldSessionId, "error", err)
+			slog.Warn("Failed to delete old session from store.", "sessionId", oldSessionId, "error", err)
 		}
 	}
 
 	s.saveSessionToResponse(w, session)
 
-	s.logger.Debug("Session created", "sessionId", session.Id)
+	slog.Debug("Session created", "sessionId", session.Id)
 
 	return session, nil
 }
 
 func (s *Handler) GetSession(r *http.Request) (*Session, error) {
-	sessionId, err := s.getSessionIdFromRequest(r)
-	if err != nil {
-		return nil, services.NewUnauthenticatedServiceError(err)
+	sessionId, ok := getSessionIdFromRequest(r)
+	if !ok {
+		return nil, ErrNoSession
 	}
 
 	session, err := s.getSessionFromStore(r.Context(), sessionId)
@@ -103,48 +139,32 @@ func (s *Handler) GetSession(r *http.Request) (*Session, error) {
 	}
 
 	if session.data.Ip != readUserIP(r) {
-		s.logger.Warn("Attempted to access session with different ip", "stored-ip", session.data.Ip, "request-ip", readUserIP(r))
-		return nil, services.NewUnauthenticatedServiceError(err)
+		slog.Warn("Attempted to access session with different ip", "stored-ip", session.data.Ip, "request-ip", readUserIP(r))
+		return nil, ErrIpMismatch
 	}
 
 	return session, nil
 }
 
-func (s *Handler) WithAuthedSession(next func(w http.ResponseWriter, r *http.Request, session *AuthedSession)) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) WithAuthedSession(next func(w http.ResponseWriter, r *http.Request, session *AuthedSession)) services.HttpHandlerErrorFn {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		session, err := s.GetSession(r)
 		if err != nil {
-			s.handleError(w, err)
-			return
+			return err
 		}
 
-		authed, err := session.Authed()
-		if err != nil {
-			s.handleError(w, err)
-			return
+		authed, ok := session.Authed()
+		if !ok {
+			return ErrSessionNotAuthed
 		}
 
 		next(w, r, authed)
+		return nil
 	}
 }
 
-func (s *Handler) RequireAuth(next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		session, err := s.GetSession(r)
-		if err != nil {
-			s.handleError(w, err)
-			return
-		}
-		if _, err := session.Authed(); err != nil {
-			s.handleError(w, err)
-			return
-		}
-		next.ServeHTTP(w, r)
-	}
-}
-
-func (s *Handler) RequireCSRFToken(next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorFn {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		requestToken := getCSRFTokenFromRequest(r)
 		safeMethod := slices.Contains(safe_methods, r.Method)
 
@@ -161,36 +181,31 @@ func (s *Handler) RequireCSRFToken(next http.Handler) http.HandlerFunc {
 
 		if !safeMethod {
 			if !validSession {
-				s.handleError(w, services.NewServiceError(errors.New("No CSRF token to match"), http.StatusForbidden, nil))
-				return
+				return ErrNoCSRFToken
 			}
 
 			if requestToken != session.data.CSRFToken {
-				s.logger.Warn("CSRF Tokens did not match", "incoming-token", requestToken, "stored-token", session.data.CSRFToken)
-				s.handleError(w, services.NewServiceError(errors.New("CSRF Tokens did not match"), http.StatusForbidden, nil))
-				return
+				return CSRFMismatchError{
+					stored: session.data.CSRFToken,
+					seen:   requestToken,
+				}
 			}
-
 		}
-		next.ServeHTTP(w, r)
 
+		next.ServeHTTP(w, r)
+		return nil
 	}
 }
 
-func (s *Handler) newSessionFromUser(ip string, user *models.User) (*Session, error) {
+func newSessionFromUser(ip string, user *models.User) (*Session, error) {
 	id, err := util.RandString(32)
 	if err != nil {
-		return nil, services.NewInternalServiceError(err)
+		return nil, err
 	}
 
 	csrf, err := util.RandString(32)
 	if err != nil {
-		return nil, services.NewInternalServiceError(err)
-	}
-
-	ttl := s.unauthTTL
-	if user != nil {
-		ttl = s.authTTL
+		return nil, err
 	}
 
 	userId := ""
@@ -199,8 +214,7 @@ func (s *Handler) newSessionFromUser(ip string, user *models.User) (*Session, er
 	}
 
 	return &Session{
-		Id:  id,
-		ttl: ttl,
+		Id: id,
 		data: sessionData{
 			UserId:    userId,
 			CSRFToken: csrf,
@@ -209,16 +223,21 @@ func (s *Handler) newSessionFromUser(ip string, user *models.User) (*Session, er
 	}, nil
 }
 
-func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session) {
-	c := &http.Cookie{
+func (s *Handler) generateSessionCookie(session *Session) *http.Cookie {
+	return &http.Cookie{
 		Name:     session_cookie,
 		Value:    session.Id,
-		MaxAge:   int(session.ttl.Seconds()),
+		MaxAge:   int(s.ttl(session).Seconds()),
 		Secure:   true,
 		HttpOnly: true,
 		Path:     "/",
 		SameSite: 4,
 	}
+}
+
+func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session) {
+
+	c := s.generateSessionCookie(session)
 	http.SetCookie(w, c)
 	w.Header().Set(csrf_header, session.data.CSRFToken)
 }
@@ -226,25 +245,25 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		s.logger.Warn("Failed to marshal session data.", "sessionId", session.Id)
-		return services.NewInternalServiceError(err)
+		slog.Warn("Failed to marshal session data.", "sessionId", session.Id)
+		return err
 	}
 
-	err = s.store.Set(ctx, session.Id, data, session.ttl)
+	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		s.logger.Warn("Failed to save session to store.", "sessionId", session.Id)
-		return services.NewInternalServiceError(err)
+		slog.Warn("Failed to save session to store.", "sessionId", session.Id)
+		return err
 	}
 
 	return nil
 }
 
-func (s *Handler) getSessionIdFromRequest(r *http.Request) (string, error) {
+func getSessionIdFromRequest(r *http.Request) (string, bool) {
 	cookie, err := r.Cookie(session_cookie)
 	if err != nil {
-		return "", err
+		return "", false
 	}
-	return cookie.Value, nil
+	return cookie.Value, true
 }
 
 func (s *Handler) getSessionFromStore(ctx context.Context, id string) (*Session, error) {
@@ -252,37 +271,38 @@ func (s *Handler) getSessionFromStore(ctx context.Context, id string) (*Session,
 	if err != nil {
 		switch {
 		case errors.Is(err, cache.ErrNotFound):
-			return nil, services.NewUnauthenticatedServiceError(err)
+			return nil, ErrNoSession
 		default:
-			return nil, services.NewInternalServiceError(err)
+			return nil, err
 		}
 	}
 
 	session := &Session{
-		Id:  id,
-		ttl: s.unauthTTL,
+		Id: id,
 	}
 	err = json.Unmarshal(data, &session.data)
 	if err != nil {
-		return nil, services.NewInternalServiceError(err)
-	}
-
-	if session.data.UserId != "" {
-		session.ttl = s.authTTL
+		return nil, err
 	}
 
 	return session, nil
 }
 
-func (s *Session) IsAuthed() bool {
-	_, err := s.Authed()
-	return err == nil
-}
-func (s *Session) Authed() (*AuthedSession, error) {
+// Convert a general session into an authenticated one
+//
+// Returns false if the session cannot be authenticated
+func (s *Session) Authed() (*AuthedSession, bool) {
 	if s.data.UserId == "" {
-		return nil, services.NewUnauthenticatedServiceError(nil)
+		return nil, false
 	}
-	return &AuthedSession{Id: s.Id, UserId: s.data.UserId}, nil
+	return &AuthedSession{Id: s.Id, UserId: s.data.UserId}, true
+}
+
+func (s *Handler) ttl(session *Session) time.Duration {
+	if _, ok := session.Authed(); ok {
+		return s.authTTL
+	}
+	return s.unauthTTL
 }
 
 func readUserIP(r *http.Request) string {
@@ -303,4 +323,50 @@ func getCSRFTokenFromRequest(r *http.Request) string {
 	}
 
 	return ""
+}
+
+type AuthedSessionServeMux struct {
+	mux          *http.ServeMux
+	sessions     *Handler
+	errHandlerFn services.HttpErrorHandler
+}
+
+func (h *Handler) NewAuthedSessionServeMux(errorHandler services.HttpErrorHandler) *AuthedSessionServeMux {
+	return &AuthedSessionServeMux{
+		mux:          http.NewServeMux(),
+		sessions:     h,
+		errHandlerFn: errorHandler,
+	}
+}
+
+func (mux *AuthedSessionServeMux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	mux.mux.ServeHTTP(w, r)
+}
+
+func (mux *AuthedSessionServeMux) HandleFunc(pattern string, next func(w http.ResponseWriter, r *http.Request, session *AuthedSession)) {
+	mux.mux.Handle(
+		pattern,
+		mux.errHandlerFn(mux.sessions.WithAuthedSession(next)),
+	)
+}
+
+func HandleHTTPSessionError(next services.HttpHandlerErrorFn) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		err := next(w, r)
+		if err == nil {
+			return
+		}
+
+		switch {
+		case errors.Is(err, ErrNoSession), errors.Is(err, ErrSessionNotAuthed), errors.Is(err, ErrIpMismatch):
+			services.HandleHttpError(w, services.NewUnauthenticatedServiceError(err))
+			return
+		case errors.Is(err, ErrCSRFMismatch), errors.Is(err, ErrNoCSRFToken):
+			services.HandleHttpError(w, services.NewServiceError(err, http.StatusForbidden, nil))
+			return
+		default:
+			services.HandleHttpError(w, services.NewInternalServiceError(err))
+			return
+		}
+	}
 }

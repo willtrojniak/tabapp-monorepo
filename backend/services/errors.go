@@ -92,3 +92,7 @@ func (e *ServiceError) Data() interface{} {
 func (e *ServiceError) Error() string {
 	return e.err.Error()
 }
+
+func (e *ServiceError) Unwrap() error {
+	return e.err
+}

@@ -1,4 +1,4 @@
-package util
+package encryptor
 
 import (
 	"crypto/aes"
@@ -9,8 +9,16 @@ import (
 	"io"
 )
 
-func Encrypt(plaintext []byte, key []byte) (string, error) {
-	block, err := aes.NewCipher(key)
+type AESEncryptor struct {
+	key []byte
+}
+
+func NewAESEncryptor(key []byte) *AESEncryptor {
+	return &AESEncryptor{key: key}
+}
+
+func (e *AESEncryptor) Encrypt(plaintext []byte) (string, error) {
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return "", err
 	}
@@ -28,13 +36,13 @@ func Encrypt(plaintext []byte, key []byte) (string, error) {
 	return base64.StdEncoding.EncodeToString(ciphertext), nil
 }
 
-func Decrypt(b64ciphertext string, key []byte) ([]byte, error) {
+func (e *AESEncryptor) Decrypt(b64ciphertext string) ([]byte, error) {
 	ciphertext, err := base64.StdEncoding.DecodeString(b64ciphertext)
 	if err != nil {
 		return nil, err
 	}
 
-	block, err := aes.NewCipher(key)
+	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return nil, err
 	}
