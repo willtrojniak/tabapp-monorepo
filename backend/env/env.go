@@ -33,7 +33,7 @@ type config struct {
 	SLACK_CLIENT_ENABLED        bool
 }
 
-var Envs = getConfig()
+var Envs config
 
 const (
 	DEV  string = "dev"
@@ -41,6 +41,10 @@ const (
 )
 
 var EXT_ENVIRONMENT string = DEV
+
+func Load() {
+	Envs = getConfig()
+}
 
 func getConfig() config {
 	envDir := os.Getenv("ENV_DIR")

@@ -15,6 +15,7 @@ import (
 
 func main() {
 
+	env.Load()
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
 	migrationsPath := "file:///migrations"
 

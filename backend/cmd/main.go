@@ -25,6 +25,8 @@ var logLevels = map[string]slog.Level{
 func main() {
 
 	slog.SetLogLoggerLevel(logLevels[env.DEV])
+
+	env.Load()
 	encryptor.SetDefaultEncryptor(encryptor.NewAESEncryptor([]byte(env.Envs.ENCRYPT_SECRET)))
 
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
