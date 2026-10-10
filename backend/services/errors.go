@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 )
 
@@ -23,17 +24,32 @@ func writeHttpError(w http.ResponseWriter, e HTTPError) {
 
 }
 
-type HTTPErrorHandler func(http.ResponseWriter, error)
+type HTTPErrorHandler func(http.ResponseWriter, *http.Request, error)
 
-func HandleHttpError(w http.ResponseWriter, err error) {
-	switch err := err.(type) {
+func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
+	var httpErr HTTPError
+	switch e := err.(type) {
 	case HTTPError:
-		writeHttpError(w, err)
-		return
+		httpErr = e
 	default:
-		writeHttpError(w, NewInternalServiceError(err))
-		return
+		httpErr = NewInternalServiceError(err)
 	}
+
+	requestId, _ := RequestIDFromContext(r.Context())
+	attrs := []any{
+		"request_id", requestId,
+		"method", r.Method,
+		"path", r.URL.Path,
+		"status", httpErr.StatusCode(),
+		"err", err,
+	}
+	if httpErr.StatusCode() >= 500 {
+		slog.Error("Request failed", attrs...)
+	} else {
+		slog.Warn("Request failed", attrs...)
+	}
+
+	writeHttpError(w, httpErr)
 }
 
 type ServiceError struct {

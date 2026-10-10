@@ -104,7 +104,7 @@ func (h *Handler) handleCreateShop(w http.ResponseWriter, r *http.Request, sessi
 	data := &models.ShopCreate{}
 	err := models.ReadRequestJson(r, data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -112,7 +112,7 @@ func (h *Handler) handleCreateShop(w http.ResponseWriter, r *http.Request, sessi
 
 	_, err = h.CreateShop(r.Context(), session, data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -145,7 +145,7 @@ func (h *Handler) handleGetShops(w http.ResponseWriter, r *http.Request, session
 
 	shops, err := h.GetShops(r.Context(), &params)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -157,13 +157,13 @@ func (h *Handler) handleGetShops(w http.ResponseWriter, r *http.Request, session
 func (h *Handler) handleGetShopById(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	shop, err := h.GetShopById(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -175,20 +175,20 @@ func (h *Handler) handleGetShopById(w http.ResponseWriter, r *http.Request, sess
 func (h *Handler) handleUpdateShop(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	data := models.ShopUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateShop(r.Context(), session, shopId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -196,13 +196,13 @@ func (h *Handler) handleUpdateShop(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleDeleteShop(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	err = h.DeleteShop(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -210,7 +210,7 @@ func (h *Handler) handleDeleteShop(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleBeginInstallSlack(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 	h.auth.BeginAuthorize(w, r, &oauth2.Config{
@@ -228,7 +228,7 @@ func (h *Handler) handleBeginInstallSlack(w http.ResponseWriter, r *http.Request
 func (h *Handler) handleInstallSlackCallback(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 	token, err := h.auth.Authorize(r, &oauth2.Config{
@@ -243,14 +243,14 @@ func (h *Handler) handleInstallSlackCallback(w http.ResponseWriter, r *http.Requ
 	})
 	if err != nil {
 		h.logger.Warn("Error getting Slack token", "err", err)
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.InstallSlack(r.Context(), session, shopId, token)
 	if err != nil {
 		h.logger.Warn("Error adding slack", "err", err)
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -265,13 +265,13 @@ func (h *Handler) handleInstallSlackCallback(w http.ResponseWriter, r *http.Requ
 func (h *Handler) handleGetSlackChannels(w http.ResponseWriter, r *http.Request, s *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewNotFoundServiceError(err))
+		h.handleError(w, r, services.NewNotFoundServiceError(err))
 		return
 	}
 
 	channels, err := h.GetShopSlackChannels(r.Context(), s, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -282,19 +282,19 @@ func (h *Handler) handleGetSlackChannels(w http.ResponseWriter, r *http.Request,
 func (h *Handler) handleUpdateSlackChannels(w http.ResponseWriter, r *http.Request, s *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewNotFoundServiceError(err))
+		h.handleError(w, r, services.NewNotFoundServiceError(err))
 		return
 	}
 	data := models.ShopSlackDataUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateShopSlackChannels(r.Context(), s, shopId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -302,20 +302,20 @@ func (h *Handler) handleUpdateSlackChannels(w http.ResponseWriter, r *http.Reque
 func (h *Handler) handleInviteUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	data := models.ShopUserCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.InviteUserToShop(r.Context(), session, shopId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -323,20 +323,20 @@ func (h *Handler) handleInviteUser(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleRemoveUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	data := models.ShopUserCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.RemoveUserFromShop(r.Context(), session, shopId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -344,13 +344,13 @@ func (h *Handler) handleRemoveUser(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleAcceptInvite(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shopId"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shopId"))
 		return
 	}
 
 	err = h.AcceptInviteToShop(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -366,21 +366,21 @@ func (h *Handler) handleGetPaymentMethods(w http.ResponseWriter, r *http.Request
 func (h *Handler) handleCreateLocation(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.LocationCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
 
 	err = h.CreateLocation(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -388,26 +388,26 @@ func (h *Handler) handleCreateLocation(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleUpdateLocation(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	locationId, err := strconv.Atoi(r.PathValue(locationIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid location id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid location id"))
 		return
 	}
 
 	data := models.LocationUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateLocation(r.Context(), session, shopId, locationId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -415,19 +415,19 @@ func (h *Handler) handleUpdateLocation(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleDeleteLocation(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	locationId, err := strconv.Atoi(r.PathValue(locationIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid location id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid location id"))
 		return
 	}
 
 	err = h.DeleteLocation(r.Context(), session, shopId, locationId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -435,21 +435,21 @@ func (h *Handler) handleDeleteLocation(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleCreateCategory(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.CategoryCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
 
 	err = h.CreateCategory(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -457,13 +457,13 @@ func (h *Handler) handleCreateCategory(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleGetCategories(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	categories, err := h.GetCategories(r.Context(), shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -474,26 +474,26 @@ func (h *Handler) handleGetCategories(w http.ResponseWriter, r *http.Request, se
 func (h *Handler) handleUpdateCategory(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	categoryId, err := strconv.Atoi(r.PathValue(categoryIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.CategoryUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateCategory(r.Context(), session, shopId, categoryId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -501,19 +501,19 @@ func (h *Handler) handleUpdateCategory(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleDeleteCategory(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	categoryId, err := strconv.Atoi(r.PathValue(categoryIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	err = h.DeleteCategory(r.Context(), session, shopId, categoryId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -522,21 +522,21 @@ func (h *Handler) handleDeleteCategory(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleCreateItem(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.ItemCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
 
 	err = h.CreateItem(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -544,13 +544,13 @@ func (h *Handler) handleCreateItem(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleGetItems(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	items, err := h.GetItems(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -561,26 +561,26 @@ func (h *Handler) handleGetItems(w http.ResponseWriter, r *http.Request, session
 func (h *Handler) handleUpdateItem(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 
 	data := models.ItemUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateItem(r.Context(), session, shopId, itemId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -589,19 +589,19 @@ func (h *Handler) handleUpdateItem(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleGetItem(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 
 	item, err := h.GetItem(r.Context(), session, shopId, itemId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -611,19 +611,19 @@ func (h *Handler) handleGetItem(w http.ResponseWriter, r *http.Request, session 
 func (h *Handler) handleDeleteItem(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 
 	err = h.DeleteItem(r.Context(), session, shopId, itemId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -632,20 +632,20 @@ func (h *Handler) handleDeleteItem(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleCreateItemVariant(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 
 	data := models.ItemVariantCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
@@ -653,7 +653,7 @@ func (h *Handler) handleCreateItemVariant(w http.ResponseWriter, r *http.Request
 
 	err = h.CreateItemVariant(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -663,31 +663,31 @@ func (h *Handler) handleCreateItemVariant(w http.ResponseWriter, r *http.Request
 func (h *Handler) handleUpdateItemVariant(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 	variantId, err := strconv.Atoi(r.PathValue(itemVariantIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item variant id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item variant id"))
 		return
 	}
 
 	data := models.ItemVariantUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateItemVariant(r.Context(), session, shopId, itemId, variantId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -695,24 +695,24 @@ func (h *Handler) handleUpdateItemVariant(w http.ResponseWriter, r *http.Request
 func (h *Handler) handleDeleteItemVariant(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	itemId, err := strconv.Atoi(r.PathValue(itemIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item id"))
 		return
 	}
 	variantId, err := strconv.Atoi(r.PathValue(itemVariantIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid item variant id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid item variant id"))
 		return
 	}
 
 	err = h.DeleteItemVariant(r.Context(), session, shopId, itemId, variantId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -720,21 +720,21 @@ func (h *Handler) handleDeleteItemVariant(w http.ResponseWriter, r *http.Request
 func (h *Handler) handleCreateSubstitutionGroup(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.SubstitutionGroupCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
 
 	err = h.CreateSubstitutionGroup(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -742,26 +742,26 @@ func (h *Handler) handleCreateSubstitutionGroup(w http.ResponseWriter, r *http.R
 func (h *Handler) handleUpdateSubstitutionGroup(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	substitutionGroupId, err := strconv.Atoi(r.PathValue(substitutionGroupIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid substitution id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid substitution id"))
 		return
 	}
 
 	data := models.SubstitutionGroupUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateSubstitutionGroup(r.Context(), session, shopId, substitutionGroupId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -769,13 +769,13 @@ func (h *Handler) handleUpdateSubstitutionGroup(w http.ResponseWriter, r *http.R
 func (h *Handler) handleGetSubstitutionGroups(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	substitutionGroups, err := h.GetSubstitutionGroups(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -786,19 +786,19 @@ func (h *Handler) handleGetSubstitutionGroups(w http.ResponseWriter, r *http.Req
 func (h *Handler) handleDeleteSubstitutionGroup(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	substitutionGroupId, err := strconv.Atoi(r.PathValue(substitutionGroupIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid substitution id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid substitution id"))
 		return
 	}
 
 	err = h.DeleteSubstitutionGroup(r.Context(), session, shopId, substitutionGroupId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -807,14 +807,14 @@ func (h *Handler) handleDeleteSubstitutionGroup(w http.ResponseWriter, r *http.R
 func (h *Handler) handleCreateTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	data := models.TabCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	data.ShopId = shopId
@@ -822,7 +822,7 @@ func (h *Handler) handleCreateTab(w http.ResponseWriter, r *http.Request, sessio
 
 	err = h.CreateTab(r.Context(), session, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -830,7 +830,7 @@ func (h *Handler) handleCreateTab(w http.ResponseWriter, r *http.Request, sessio
 func (h *Handler) handleGetTabs(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	tabs, err := h.GetTabsForUser(r.Context(), session, session.UserId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -841,13 +841,13 @@ func (h *Handler) handleGetTabs(w http.ResponseWriter, r *http.Request, session 
 func (h *Handler) handleGetTabsForShop(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabs, err := h.GetTabsForShop(r.Context(), session, shopId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -859,18 +859,18 @@ func (h *Handler) handleGetTabsForShop(w http.ResponseWriter, r *http.Request, s
 func (h *Handler) handleGetTabById(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	tab, err := h.GetTabById(r.Context(), session, shopId, tabId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -882,26 +882,26 @@ func (h *Handler) handleGetTabById(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleUpdateTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	data := models.TabUpdate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.UpdateTab(r.Context(), session, shopId, tabId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -910,19 +910,19 @@ func (h *Handler) handleUpdateTab(w http.ResponseWriter, r *http.Request, sessio
 func (h *Handler) handleApproveTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	err = h.ApproveTab(r.Context(), session, shopId, tabId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -930,19 +930,19 @@ func (h *Handler) handleApproveTab(w http.ResponseWriter, r *http.Request, sessi
 func (h *Handler) handleCloseTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	err = h.CloseTab(r.Context(), session, shopId, tabId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
@@ -950,26 +950,26 @@ func (h *Handler) handleCloseTab(w http.ResponseWriter, r *http.Request, session
 func (h *Handler) handleAddOrderToTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	data := models.BillOrderCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.AddOrderToTab(r.Context(), session, shopId, tabId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -978,26 +978,26 @@ func (h *Handler) handleAddOrderToTab(w http.ResponseWriter, r *http.Request, se
 func (h *Handler) handleRemoveOrderFromTab(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	data := models.BillOrderCreate{}
 	err = models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.RemoveOrderFromTab(r.Context(), session, shopId, tabId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -1006,25 +1006,25 @@ func (h *Handler) handleRemoveOrderFromTab(w http.ResponseWriter, r *http.Reques
 func (h *Handler) handleCloseTabBill(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	shopId, err := strconv.Atoi(r.PathValue(shopIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid shop id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid shop id"))
 		return
 	}
 
 	tabId, err := strconv.Atoi(r.PathValue(tabIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid tab id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid tab id"))
 		return
 	}
 
 	billId, err := strconv.Atoi(r.PathValue(billIdParam))
 	if err != nil {
-		h.handleError(w, services.NewValidationServiceError(err, "Invalid bill id"))
+		h.handleError(w, r, services.NewValidationServiceError(err, "Invalid bill id"))
 		return
 	}
 
 	err = h.MarkTabBillPaid(r.Context(), session, shopId, tabId, billId)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }

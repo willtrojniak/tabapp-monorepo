@@ -17,19 +17,19 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 	oauth2token, err := h.Authorize(r, &h.googleCfg)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	user, err := h.createUserFromToken(r, oauth2token, &h.googleCfg, h.googleProvider)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
 	_, err = h.sessionManager.SetNewSession(w, r, user)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -46,7 +46,7 @@ func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) handleAuth(w http.ResponseWriter, r *http.Request) {
 	if err := h.BeginAuthorize(w, r, &h.googleCfg); err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *Handler) handleAuth(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) handleLogout(w http.ResponseWriter, r *http.Request) {
 
 	if err := h.logout(w, r); err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 

@@ -359,13 +359,13 @@ func HandleHTTPSessionError(next services.HttpHandlerErrorFn) http.HandlerFunc {
 
 		switch {
 		case errors.Is(err, ErrNoSession), errors.Is(err, ErrSessionNotAuthed), errors.Is(err, ErrIpMismatch):
-			services.HandleHttpError(w, services.NewUnauthenticatedServiceError(err))
+			services.HandleHttpError(w, r, services.NewUnauthenticatedServiceError(err))
 			return
 		case errors.Is(err, ErrCSRFMismatch), errors.Is(err, ErrNoCSRFToken):
-			services.HandleHttpError(w, services.NewServiceError(err, http.StatusForbidden, nil))
+			services.HandleHttpError(w, r, services.NewServiceError(err, http.StatusForbidden, nil))
 			return
 		default:
-			services.HandleHttpError(w, services.NewInternalServiceError(err))
+			services.HandleHttpError(w, r, services.NewInternalServiceError(err))
 			return
 		}
 	}

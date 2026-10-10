@@ -90,6 +90,7 @@ func (s *APIServer) Run() error {
 
 	return http.ListenAndServe(s.addr,
 		WithMiddleware(
+			RequestIDMiddleware,
 			RequestLoggerMiddleware,
 			CORSMiddleware,
 			func(next http.Handler) http.HandlerFunc {

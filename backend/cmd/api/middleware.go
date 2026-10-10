@@ -4,6 +4,9 @@ import (
 	"log/slog"
 	"net/http"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/willtrojniak/tabapp-monorepo/services"
 )
 
 type responseWriter struct {
@@ -54,6 +57,14 @@ func WithMiddleware(middlewares ...Middleware) Middleware {
 	}
 }
 
+func RequestIDMiddleware(next http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := uuid.NewString()
+		w.Header().Set("X-Request-Id", id)
+		next.ServeHTTP(w, r.WithContext(services.WithRequestID(r.Context(), id)))
+	}
+}
+
 func RequestLoggerMiddleware(next http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		wrappedWriter := wrapResponseWriter(w)
@@ -62,7 +73,9 @@ func RequestLoggerMiddleware(next http.Handler) http.HandlerFunc {
 		next.ServeHTTP(&wrappedWriter, r)
 		elapsed := time.Since(start)
 
+		requestId, _ := services.RequestIDFromContext(r.Context())
 		slog.Info("API",
+			slog.String("request_id", requestId),
 			slog.String("method", r.Method),
 			slog.String("path", r.URL.Path),
 			slog.Int("status", wrappedWriter.Code()),

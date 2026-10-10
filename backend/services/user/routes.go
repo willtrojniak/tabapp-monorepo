@@ -25,7 +25,7 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session 
 	h.logger.Debug("Handling get user")
 	user, err := h.GetUser(r.Context(), session)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -39,7 +39,7 @@ func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, sessi
 	data := models.UserUpdate{}
 	err := models.ReadRequestJson(r, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	if *data.PreferredName == "" {
@@ -48,7 +48,7 @@ func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, sessi
 
 	err = h.UpdateUser(r.Context(), session, session.UserId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
