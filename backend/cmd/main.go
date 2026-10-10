@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,12 +20,16 @@ import (
 )
 
 var logLevels = map[string]slog.Level{
-	"dev": slog.LevelDebug,
+	env.DEV:  slog.LevelDebug,
+	env.PROD: slog.LevelInfo,
 }
 
 func main() {
 
-	slog.SetLogLoggerLevel(logLevels[env.DEV])
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevels[env.EXT_ENVIRONMENT],
+	}))
+	slog.SetDefault(logger)
 
 	env.Load()
 	encryptor.SetDefaultEncryptor(encryptor.NewAESEncryptor([]byte(env.Envs.ENCRYPT_SECRET)))

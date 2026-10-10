@@ -75,7 +75,7 @@ func (s *APIServer) Run() error {
 		query := models.GetShopsQueryParams{}
 		shops, err := shopHandler.GetShops(context.Background(), &query)
 		if err != nil {
-			slog.Warn("Error retreiving all shops")
+			slog.Warn("Error retreiving all shops", "err", err)
 			return
 		}
 		slog.Info("Shops", "count", len(shops))

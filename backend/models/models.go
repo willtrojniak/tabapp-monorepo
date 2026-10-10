@@ -44,7 +44,7 @@ func ValidateData(data interface{}, logger *slog.Logger) error {
 
 	if err != nil {
 		if err, ok := err.(*validator.InvalidValidationError); ok {
-			logger.Error("Error while attempting to validate user")
+			logger.Error("Error while attempting to validate user", "err", err)
 			return services.NewInternalServiceError(err)
 		}
 

@@ -103,7 +103,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 
 	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		slog.Warn("Error while creating new session.")
+		slog.Warn("Error while creating new session.", "err", err)
 		return nil, err
 	}
 
@@ -245,13 +245,13 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		slog.Warn("Failed to marshal session data.", "sessionId", session.Id)
+		slog.Warn("Failed to marshal session data.", "sessionId", session.Id, "err", err)
 		return err
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		slog.Warn("Failed to save session to store.", "sessionId", session.Id)
+		slog.Warn("Failed to save session to store.", "sessionId", session.Id, "err", err)
 		return err
 	}
 

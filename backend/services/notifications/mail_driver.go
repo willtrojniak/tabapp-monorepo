@@ -71,7 +71,7 @@ func (driver *MailDriver) NotifyUsers(to []*models.User, n Notification) error {
 		emails,
 		html)
 	if err != nil {
-		slog.Error("Failed to send mail", "emails", emails, "html", html)
+		slog.Error("Failed to send mail", "emails", emails, "err", err)
 	}
 
 	return err
