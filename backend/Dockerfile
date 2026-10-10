@@ -22,6 +22,8 @@ RUN echo "Building $TARGETOS/$TARGETARCH-$ENV"
 RUN --mount=type=cache,target="/root/.cach/go-build" GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -v -o ./bin/api -ldflags "-X github.com/willtrojniak/tabapp-monorepo/env.EXT_ENVIRONMENT=${ENV}" ./cmd/main.go
 
 FROM debian:bookworm
+ARG ENV
+LABEL environment=${ENV}
 RUN apt update
 RUN apt install ca-certificates -y
 RUN update-ca-certificates
