@@ -1,5 +1,10 @@
 export function FormatDateMMDDYYYY(date: string) {
-  return date.replace(/^(\d{4})-(\d{2})-(\d{2})$/, "$2/$3/$1")
+  const [year, month, day] = date.split('-').map(Number)
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
 export function getMinutes24hTime(time: string) {
