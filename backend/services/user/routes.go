@@ -11,7 +11,6 @@ import (
 const userIdPath = "userId"
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
-	h.logger.Info("Registering user routes")
 	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError)
 	router.Handle("/users", sessionMux)
 	router.Handle("/users/", sessionMux)
@@ -22,7 +21,6 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 }
 
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
-	h.logger.Debug("Handling get user")
 	user, err := h.GetUser(r.Context(), session)
 	if err != nil {
 		h.handleError(w, r, err)
@@ -35,7 +33,6 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session 
 }
 
 func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
-	h.logger.Debug("Handling Update User")
 	data := models.UserUpdate{}
 	err := models.ReadRequestJson(r, &data)
 	if err != nil {

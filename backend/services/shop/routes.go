@@ -25,7 +25,6 @@ const (
 )
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
-	h.logger.Info("Registering shop routes")
 	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError)
 	router.Handle("/shops", sessionMux)
 	router.Handle("/tabs", sessionMux)
@@ -242,14 +241,12 @@ func (h *Handler) handleInstallSlackCallback(w http.ResponseWriter, r *http.Requ
 		Scopes:      []string{"channels:read", "chat:write", "chat:write.public", "groups:read"},
 	})
 	if err != nil {
-		h.logger.Warn("Error getting Slack token", "err", err)
 		h.handleError(w, r, err)
 		return
 	}
 
 	err = h.InstallSlack(r.Context(), session, shopId, token)
 	if err != nil {
-		h.logger.Warn("Error adding slack", "err", err)
 		h.handleError(w, r, err)
 		return
 	}

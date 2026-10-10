@@ -11,7 +11,6 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 	router.HandleFunc("GET /auth/google/callback", h.handleAuthCallback)
 	router.HandleFunc("GET /auth/google", h.handleAuth)
 	router.HandleFunc("POST /logout", h.handleLogout)
-	h.logger.Info("Registered auth routes")
 }
 
 func (h *Handler) handleAuthCallback(w http.ResponseWriter, r *http.Request) {

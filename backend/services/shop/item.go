@@ -52,7 +52,6 @@ func (h *Handler) GetItem(ctx context.Context, session *sessions.AuthedSession, 
 }
 
 func (h *Handler) DeleteItem(ctx context.Context, session *sessions.AuthedSession, shopId int, itemId int) error {
-	h.logger.Debug("Deleting item", "id", itemId)
 	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_DELETE_ITEM, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
 		return pq.DeleteItem(ctx, shopId, itemId)
 	})

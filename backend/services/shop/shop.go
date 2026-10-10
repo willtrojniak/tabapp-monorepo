@@ -34,8 +34,6 @@ func NewHandler(store *db.PgxStore, auth *auth.Handler, sessions *sessions.Handl
 }
 
 func (h *Handler) CreateShop(ctx context.Context, session *sessions.AuthedSession, data *models.ShopCreate) (shop *models.Shop, err error) {
-	h.logger.Debug("Creating shop")
-
 	// Data validation
 	err = models.ValidateData(data, h.logger)
 	if err != nil {
@@ -84,7 +82,7 @@ func (h *Handler) GetShops(ctx context.Context, params *models.GetShopsQueryPara
 			h.logger.Warn("Error reading from database", "error", err)
 			return nil, err
 		}
-		h.logger.Info("GetShops", "count", len(shops))
+		h.logger.Info("Retrieved shops", "count", len(shops))
 		return shops, nil
 	})
 }
@@ -102,8 +100,6 @@ func (h *Handler) GetShopById(ctx context.Context, session *sessions.AuthedSessi
 }
 
 func (h *Handler) UpdateShop(ctx context.Context, session *sessions.AuthedSession, shopId int, data *models.ShopUpdate) error {
-	h.logger.Debug("Updating Shop", "id", shopId)
-
 	err := models.ValidateData(data, h.logger)
 	if err != nil {
 		return err

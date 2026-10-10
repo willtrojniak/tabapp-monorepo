@@ -28,7 +28,6 @@ func NewHandler(store *db.PgxStore, sessions *sessions.Handler, handleError serv
 }
 
 func (h *Handler) CreateUser(ctx context.Context, data *models.UserCreate) (*models.User, error) {
-	h.logger.Debug("Creating user", "id", data.Id)
 	err := models.ValidateData(data, h.logger)
 	if err != nil {
 		return nil, err
@@ -58,9 +57,6 @@ func (h *Handler) GetUser(ctx context.Context, session *sessions.AuthedSession) 
 }
 
 func (h *Handler) UpdateUser(ctx context.Context, session *sessions.AuthedSession, userId string, data *models.UserUpdate) error {
-
-	h.logger.Debug("Updating user", "id", userId)
-
 	err := models.ValidateData(data, h.logger)
 	if err != nil {
 		return err

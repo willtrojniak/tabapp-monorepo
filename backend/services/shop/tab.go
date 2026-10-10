@@ -55,13 +55,11 @@ func (h *Handler) UpdateTab(ctx context.Context, session *sessions.AuthedSession
 		return err
 	}
 
-	h.logger.Debug("Shop.UpdateTab")
 	return WithAuthorizeTabAction(ctx, h.store, session, shopId, tabId, authorization.TAB_ACTION_REQUEST_UPDATE, func(pq *db.PgxQueries, user *models.User, shop *models.Shop, tab *models.Tab) error {
 		tabLocationIds := make([]uint, 0)
 		for _, location := range tab.Locations {
 			tabLocationIds = append(tabLocationIds, location.Id)
 		}
-		h.logger.Debug("Shop.UpdateTab Authorized Request")
 
 		// Check if the 'updates' are unchanged from current tab
 		if reflect.DeepEqual(tab.TabBase, data.TabBase) && reflect.DeepEqual(tab.VerificationList, data.VerificationList) && reflect.DeepEqual(tabLocationIds, data.LocationIds) {
@@ -70,18 +68,18 @@ func (h *Handler) UpdateTab(ctx context.Context, session *sessions.AuthedSession
 
 		// Next, check if have permission to update the tab directly
 		if ok, err := authorization.AuthorizeTabAction(user, &authorization.TabTarget{Tab: tab, Shop: shop}, authorization.TAB_ACTION_UPDATE); err == nil && ok {
-			h.logger.Debug("Shop.UpdateTab Authorized Direct Update")
+			h.logger.Debug("Applying tab update directly", "shopId", shopId, "tabId", tabId)
 			return pq.UpdateTab(ctx, shopId, tabId, data)
 		}
 
 		// Otherwise:
 		// Check if part of the tab data has changed and request updates
 		if !(reflect.DeepEqual(tab.TabBase, data.TabBase)) || !reflect.DeepEqual(tabLocationIds, data.LocationIds) {
-			h.logger.Debug("Shop.UpdateTab One")
+			h.logger.Debug("Recording requested tab data update", "shopId", shopId, "tabId", tabId)
 			err = pq.SetTabUpdates(ctx, shopId, tabId, data)
 		} else {
 			// If not, only update the people on the tab
-			h.logger.Debug("Shop.UpdateTab Two")
+			h.logger.Debug("Recording requested tab verification list update", "shopId", shopId, "tabId", tabId)
 			err = pq.SetTabUsers(ctx, shopId, tabId, data.VerificationList)
 		}
 
