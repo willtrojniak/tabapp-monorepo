@@ -48,6 +48,7 @@ type Handler struct {
 	store     cache.Cache
 	authTTL   time.Duration
 	unauthTTL time.Duration
+	logger    *slog.Logger
 }
 
 var ErrSessionNotAuthed = SessionNotAuthedError{}
@@ -89,12 +90,13 @@ func (e IpMismatchError) Error() string {
 	return "Ip mismatch on session"
 }
 
-func NewSessionsManager(store cache.Cache, authTTL time.Duration, unauthTTL time.Duration, h services.HTTPErrorHandler) *Handler {
+func NewSessionsManager(store cache.Cache, authTTL time.Duration, unauthTTL time.Duration, h services.HTTPErrorHandler, logger *slog.Logger) *Handler {
 
 	return &Handler{
 		store:     store,
 		authTTL:   authTTL,
 		unauthTTL: unauthTTL,
+		logger:    logger,
 	}
 }
 
@@ -103,7 +105,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 
 	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		slog.Warn("Error while creating new session.")
+		s.logger.ErrorContext(r.Context(), "Error while creating new session.", "err", err)
 		return nil, err
 	}
 
@@ -116,13 +118,13 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		// The client has a previous saved session
 		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			slog.Warn("Failed to delete old session from store.", "sessionId", oldSessionId, "error", err)
+			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "session_id", oldSessionId, "err", err)
 		}
 	}
 
 	s.saveSessionToResponse(w, session)
 
-	slog.Debug("Session created", "sessionId", session.Id)
+	s.logger.DebugContext(r.Context(), "Session created", "session_id", session.Id)
 
 	return session, nil
 }
@@ -139,7 +141,7 @@ func (s *Handler) GetSession(r *http.Request) (*Session, error) {
 	}
 
 	if session.data.Ip != readUserIP(r) {
-		slog.Warn("Attempted to access session with different ip", "stored-ip", session.data.Ip, "request-ip", readUserIP(r))
+		s.logger.WarnContext(r.Context(), "Attempted to access session with different ip", "stored_ip", session.data.Ip, "request_ip", readUserIP(r))
 		return nil, ErrIpMismatch
 	}
 
@@ -245,13 +247,13 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		slog.Warn("Failed to marshal session data.", "sessionId", session.Id)
+		s.logger.ErrorContext(ctx, "Failed to marshal session data.", "session_id", session.Id, "err", err)
 		return err
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		slog.Warn("Failed to save session to store.", "sessionId", session.Id)
+		s.logger.ErrorContext(ctx, "Failed to save session to store.", "session_id", session.Id, "err", err)
 		return err
 	}
 
@@ -350,23 +352,25 @@ func (mux *AuthedSessionServeMux) HandleFunc(pattern string, next func(w http.Re
 	)
 }
 
-func HandleHTTPSessionError(next services.HttpHandlerErrorFn) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := next(w, r)
-		if err == nil {
-			return
-		}
+func HandleHTTPSessionError(handleError services.HTTPErrorHandler) services.HttpErrorHandler {
+	return func(next services.HttpHandlerErrorFn) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			err := next(w, r)
+			if err == nil {
+				return
+			}
 
-		switch {
-		case errors.Is(err, ErrNoSession), errors.Is(err, ErrSessionNotAuthed), errors.Is(err, ErrIpMismatch):
-			services.HandleHttpError(w, services.NewUnauthenticatedServiceError(err))
-			return
-		case errors.Is(err, ErrCSRFMismatch), errors.Is(err, ErrNoCSRFToken):
-			services.HandleHttpError(w, services.NewServiceError(err, http.StatusForbidden, nil))
-			return
-		default:
-			services.HandleHttpError(w, services.NewInternalServiceError(err))
-			return
+			switch {
+			case errors.Is(err, ErrNoSession), errors.Is(err, ErrSessionNotAuthed), errors.Is(err, ErrIpMismatch):
+				handleError(w, r, services.NewUnauthenticatedServiceError(err))
+				return
+			case errors.Is(err, ErrCSRFMismatch), errors.Is(err, ErrNoCSRFToken):
+				handleError(w, r, services.NewServiceError(err, http.StatusForbidden, nil))
+				return
+			default:
+				handleError(w, r, services.NewInternalServiceError(err))
+				return
+			}
 		}
 	}
 }

@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) CreateLocation(ctx context.Context, session *sessions.AuthedSession, data *models.LocationCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -21,8 +21,7 @@ func (h *Handler) CreateLocation(ctx context.Context, session *sessions.AuthedSe
 }
 
 func (h *Handler) UpdateLocation(ctx context.Context, session *sessions.AuthedSession, shopId int, locationId int, data *models.LocationUpdate) error {
-	h.logger.Debug("Updating location", "shopId", shopId, "locationId", locationId)
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -33,8 +32,6 @@ func (h *Handler) UpdateLocation(ctx context.Context, session *sessions.AuthedSe
 }
 
 func (h *Handler) DeleteLocation(ctx context.Context, session *sessions.AuthedSession, shopId int, locationId int) error {
-	h.logger.Debug("Deleting location", "shopId", shopId, "locationId", locationId)
-
 	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_DELETE_LOCATION, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
 		return pq.DeleteLocation(ctx, shopId, locationId)
 	})

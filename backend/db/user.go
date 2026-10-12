@@ -21,7 +21,7 @@ func (q *PgxQueries) CreateUser(ctx context.Context, data *models.UserCreate) (*
 	user, err := pgx.CollectOneRow(row, pgx.RowToAddrOfStructByName[models.User])
 
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 
 	return user, nil
@@ -33,7 +33,7 @@ func (q *PgxQueries) GetUser(ctx context.Context, userId string) (*models.User, 
 
 	user, err := pgx.CollectOneRow(row, pgx.RowToAddrOfStructByName[models.User])
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 	return user, nil
 }
@@ -49,7 +49,7 @@ func (q *PgxQueries) UpdateUser(ctx context.Context, userId string, data *models
 		})
 
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	return nil

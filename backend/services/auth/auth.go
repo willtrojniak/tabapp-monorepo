@@ -62,7 +62,6 @@ func (h *Handler) BeginAuthorize(w http.ResponseWriter, r *http.Request, cfg *oa
 	}
 
 	redirect := r.URL.Query().Get("redirect")
-	h.logger.Debug("Redirect query param", "value", redirect)
 
 	setCallbackCookie(w, r, "state", state)
 	setCallbackCookie(w, r, "nonce", nonce)
@@ -76,7 +75,7 @@ func (h *Handler) Authorize(r *http.Request, cfg *oauth2.Config) (*oauth2.Token,
 	// Check that the CSRF token matches
 	state, err := r.Cookie("state")
 	if err != nil {
-		h.logger.Warn("Missing State Cookie")
+		h.logger.WarnContext(r.Context(), "Missing State Cookie")
 		return nil, services.NewInternalServiceError(err)
 	}
 

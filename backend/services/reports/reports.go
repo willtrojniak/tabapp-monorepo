@@ -2,6 +2,7 @@ package reports
 
 import (
 	"context"
+	"log/slog"
 	"slices"
 
 	"github.com/willtrojniak/tabapp-monorepo/db"
@@ -12,16 +13,18 @@ import (
 type ReportHandler struct {
 	store      *db.PgxStore
 	dispatcher *events.EventDispatcher
+	logger     *slog.Logger
 }
 
-func NewReportHandler(store *db.PgxStore, dispatcher *events.EventDispatcher) *ReportHandler {
+func NewReportHandler(store *db.PgxStore, dispatcher *events.EventDispatcher, logger *slog.Logger) *ReportHandler {
 	return &ReportHandler{
 		store:      store,
 		dispatcher: dispatcher,
+		logger:     logger,
 	}
 }
 
-func (rh *ReportHandler) GenerateShopTabOverview(ctx context.Context, shopId int) {
+func (rh *ReportHandler) GenerateShopTabOverview(ctx context.Context, shopId int) error {
 	var shop *models.Shop
 	var tabs []models.TabOverview
 	err := db.WithTx(ctx, rh.store, func(pq *db.PgxQueries) error {
@@ -40,7 +43,8 @@ func (rh *ReportHandler) GenerateShopTabOverview(ctx context.Context, shopId int
 		return nil
 	})
 	if err != nil {
-		return
+		rh.logger.ErrorContext(ctx, "Failed to generate shop tab overview", "shop_id", shopId, "err", err)
+		return err
 	}
 
 	tabs = slices.DeleteFunc(tabs, func(t models.TabOverview) bool {
@@ -52,4 +56,5 @@ func (rh *ReportHandler) GenerateShopTabOverview(ctx context.Context, shopId int
 	})
 
 	events.Dispatch(rh.dispatcher, events.DailyTabReportEvent{Shop: shop, Tabs: tabs})
+	return nil
 }

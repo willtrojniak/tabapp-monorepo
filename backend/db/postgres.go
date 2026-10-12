@@ -17,17 +17,19 @@ type PgxConn interface {
 }
 
 type PgxStore struct {
-	pool *pgxpool.Pool
+	pool   *pgxpool.Pool
+	logger *slog.Logger
 }
 
-func NewPostgresStorage(ctx context.Context, config *pgxpool.Config) (*PgxStore, error) {
+func NewPostgresStorage(ctx context.Context, config *pgxpool.Config, logger *slog.Logger) (*PgxStore, error) {
 	pool, err := pgxpool.New(ctx, config.ConnString())
 	if err != nil {
 		return nil, err
 	}
 
 	pg := &PgxStore{
-		pool: pool,
+		pool:   pool,
+		logger: logger,
 	}
 
 	return pg, nil
@@ -36,21 +38,22 @@ func NewPostgresStorage(ctx context.Context, config *pgxpool.Config) (*PgxStore,
 func (s *PgxStore) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(ctx, err, s.logger)
 	}
-	return &PgxQueries{tx: tx}, nil
+	return &PgxQueries{tx: tx, logger: s.logger}, nil
 }
 
 type PgxQueries struct {
-	tx pgx.Tx
+	tx     pgx.Tx
+	logger *slog.Logger
 }
 
 func (q *PgxQueries) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := q.tx.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
-	return &PgxQueries{tx: tx}, nil
+	return &PgxQueries{tx: tx, logger: q.logger}, nil
 }
 
 func (q *PgxQueries) Rollback(ctx context.Context) error {
@@ -68,7 +71,8 @@ func (q *PgxQueries) WithTx(ctx context.Context, fn func(*PgxQueries) error) err
 func WithTx(ctx context.Context, conn PgxConn, fn func(*PgxQueries) error) error {
 	q, err := conn.Begin(ctx)
 	if err != nil {
-		return handlePgxError(err)
+		// conn.Begin already wraps and logs its own error.
+		return err
 	}
 	defer q.Rollback(ctx)
 	err = fn(q)
@@ -78,7 +82,7 @@ func WithTx(ctx context.Context, conn PgxConn, fn func(*PgxQueries) error) error
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(ctx, err, q.logger)
 	}
 	return nil
 }
@@ -86,7 +90,8 @@ func WithTx(ctx context.Context, conn PgxConn, fn func(*PgxQueries) error) error
 func WithTxRet[T any](ctx context.Context, conn PgxConn, fn func(*PgxQueries) (T, error)) (T, error) {
 	q, err := conn.Begin(ctx)
 	if err != nil {
-		return *new(T), handlePgxError(err)
+		// conn.Begin already wraps and logs its own error.
+		return *new(T), err
 	}
 	defer q.Rollback(ctx)
 	val, err := fn(q)
@@ -96,12 +101,12 @@ func WithTxRet[T any](ctx context.Context, conn PgxConn, fn func(*PgxQueries) (T
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return *new(T), handlePgxError(err)
+		return *new(T), handlePgxError(ctx, err, q.logger)
 	}
 	return val, nil
 }
 
-func handlePgxError(err error) error {
+func handlePgxError(ctx context.Context, err error, logger *slog.Logger) error {
 	var pgerr *pgconn.PgError
 
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -111,6 +116,6 @@ func handlePgxError(err error) error {
 	if errors.As(err, &pgerr) && pgerr.Code == pgerrcode.UniqueViolation {
 		return services.NewDataConflictServiceError(err)
 	}
-	slog.Warn("Database operation failed", "err", err)
+	logger.ErrorContext(ctx, "Database operation failed", "err", err)
 	return services.NewInternalServiceError(err)
 }

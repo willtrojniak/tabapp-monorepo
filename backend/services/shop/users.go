@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) InviteUserToShop(ctx context.Context, session *sessions.AuthedSession, shopId int, userData *models.ShopUserCreate) error {
-	err := models.ValidateData(userData, h.logger)
+	err := models.ValidateData(ctx, userData, h.logger)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (h *Handler) InviteUserToShop(ctx context.Context, session *sessions.Authed
 }
 
 func (h *Handler) RemoveUserFromShop(ctx context.Context, session *sessions.AuthedSession, shopId int, data *models.ShopUserCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

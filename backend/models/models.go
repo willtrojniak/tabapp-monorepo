@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -39,12 +40,12 @@ func dateFutureValidation(f1 validator.FieldLevel) bool {
 	return date.After(civil.DateOf(time.Now().AddDate(0, 0, -2)))
 }
 
-func ValidateData(data interface{}, logger *slog.Logger) error {
+func ValidateData(ctx context.Context, data interface{}, logger *slog.Logger) error {
 	err := Validate.Struct(data)
 
 	if err != nil {
 		if err, ok := err.(*validator.InvalidValidationError); ok {
-			logger.Error("Error while attempting to validate user")
+			logger.ErrorContext(ctx, "Invalid data passed to validator", "type", fmt.Sprintf("%T", data), "err", err)
 			return services.NewInternalServiceError(err)
 		}
 
@@ -52,7 +53,7 @@ func ValidateData(data interface{}, logger *slog.Logger) error {
 		for _, err := range err.(validator.ValidationErrors) {
 			errors[err.Field()] = services.ValidationError{Value: err.Value(), Error: err.Tag()}
 		}
-		logger.Debug("Data validation failed", "errors", errors)
+		logger.DebugContext(ctx, "Data validation failed", "validation_errors", errors)
 		return services.NewValidationServiceError(err, errors)
 
 	}
@@ -60,7 +61,7 @@ func ValidateData(data interface{}, logger *slog.Logger) error {
 	return nil
 }
 
-func ReadRequestJson(r *http.Request, dest interface{}) error {
+func ReadRequestJson(r *http.Request, dest interface{}, logger *slog.Logger) error {
 	mediaType := getMediaType(r)
 	if mediaType != "application/json" {
 		return services.NewServiceError(nil, http.StatusUnsupportedMediaType, nil)
@@ -81,7 +82,7 @@ func ReadRequestJson(r *http.Request, dest interface{}) error {
 		case uuid.IsInvalidLengthError(err):
 			return services.NewServiceError(err, http.StatusBadRequest, fmt.Sprintf("Invalid UUID value"))
 		default:
-			slog.Warn("Issue reading JSON from request body", "err", err)
+			logger.WarnContext(r.Context(), "Issue reading JSON from request body", "err", err)
 			return services.NewInternalServiceError(err)
 		}
 	}

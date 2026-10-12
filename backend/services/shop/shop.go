@@ -34,10 +34,8 @@ func NewHandler(store *db.PgxStore, auth *auth.Handler, sessions *sessions.Handl
 }
 
 func (h *Handler) CreateShop(ctx context.Context, session *sessions.AuthedSession, data *models.ShopCreate) (shop *models.Shop, err error) {
-	h.logger.Debug("Creating shop")
-
 	// Data validation
-	err = models.ValidateData(data, h.logger)
+	err = models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -81,10 +79,10 @@ func (h *Handler) GetShops(ctx context.Context, params *models.GetShopsQueryPara
 	return db.WithTxRet(ctx, h.store, func(pq *db.PgxQueries) ([]models.ShopOverview, error) {
 		shops, err := pq.GetShops(ctx, params)
 		if err != nil {
-			h.logger.Warn("Error reading from database", "error", err)
+			h.logger.ErrorContext(ctx, "Error reading from database", "err", err)
 			return nil, err
 		}
-		h.logger.Info("GetShops", "count", len(shops))
+		h.logger.DebugContext(ctx, "Retrieved shops", "count", len(shops))
 		return shops, nil
 	})
 }
@@ -102,9 +100,7 @@ func (h *Handler) GetShopById(ctx context.Context, session *sessions.AuthedSessi
 }
 
 func (h *Handler) UpdateShop(ctx context.Context, session *sessions.AuthedSession, shopId int, data *models.ShopUpdate) error {
-	h.logger.Debug("Updating Shop", "id", shopId)
-
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

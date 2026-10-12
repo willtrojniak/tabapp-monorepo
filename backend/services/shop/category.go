@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) CreateCategory(ctx context.Context, session *sessions.AuthedSession, data *models.CategoryCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -26,8 +26,7 @@ func (h *Handler) GetCategories(ctx context.Context, shopId int) ([]models.Categ
 }
 
 func (h *Handler) UpdateCategory(ctx context.Context, session *sessions.AuthedSession, shopId int, categoryId int, data *models.CategoryUpdate) error {
-	h.logger.Debug("Updating category", "shopId", shopId, "categoryId", categoryId)
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -37,7 +36,6 @@ func (h *Handler) UpdateCategory(ctx context.Context, session *sessions.AuthedSe
 }
 
 func (h *Handler) DeleteCategory(ctx context.Context, session *sessions.AuthedSession, shopId int, categoryId int) error {
-	h.logger.Debug("Deleting category", "shopId", shopId, "categoryId", categoryId)
 	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_DELETE_CATEGORY, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
 		return pq.DeleteCategory(ctx, shopId, categoryId)
 	})

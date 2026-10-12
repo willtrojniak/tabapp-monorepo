@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -14,17 +15,25 @@ import (
 	"github.com/willtrojniak/tabapp-monorepo/db"
 	"github.com/willtrojniak/tabapp-monorepo/env"
 	"github.com/willtrojniak/tabapp-monorepo/internal/encryptor"
+	"github.com/willtrojniak/tabapp-monorepo/services"
 	"github.com/willtrojniak/tabapp-monorepo/services/events"
 	"github.com/willtrojniak/tabapp-monorepo/services/notifications"
 )
 
 var logLevels = map[string]slog.Level{
-	"dev": slog.LevelDebug,
+	env.DEV:  slog.LevelDebug,
+	env.PROD: slog.LevelInfo,
 }
 
 func main() {
 
-	slog.SetLogLoggerLevel(logLevels[env.DEV])
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevels[env.EXT_ENVIRONMENT],
+	})
+	logger := slog.New(services.NewRequestIDHandler(jsonHandler))
+	slog.SetDefault(logger)
+
+	env.Load()
 	encryptor.SetDefaultEncryptor(encryptor.NewAESEncryptor([]byte(env.Envs.ENCRYPT_SECRET)))
 
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
@@ -33,7 +42,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pg, err := db.NewPostgresStorage(context.Background(), pgConfig)
+	pg, err := db.NewPostgresStorage(context.Background(), pgConfig, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,17 +56,18 @@ func main() {
 
 	eventDispatcher := events.NewEventDispatcher()
 
-	notificationsService := notifications.NewNotificationService(slog.Default(), eventDispatcher)
+	notificationsService := notifications.NewNotificationService(eventDispatcher, logger)
 	notificationsService.RegisterDriver(notifications.NewMailDriver(
 		env.Envs.EMAIL_CLIENT_USER,
 		env.Envs.EMAIL_CLIENT_PASSWORD,
 		env.Envs.EMAIL_CLIENT_HOST,
-		env.Envs.EMAIL_CLIENT_PORT),
+		env.Envs.EMAIL_CLIENT_PORT,
+		logger),
 		env.Envs.EMAIL_CLIENT_ENABLED)
-	notificationsService.RegisterDriver(notifications.NewSlackDriver(), env.Envs.SLACK_CLIENT_ENABLED)
+	notificationsService.RegisterDriver(notifications.NewSlackDriver(logger), env.Envs.SLACK_CLIENT_ENABLED)
 
 	gob.Register(uuid.UUID{})
-	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher)
+	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

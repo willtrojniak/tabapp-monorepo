@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) CreateSubstitutionGroup(ctx context.Context, session *sessions.AuthedSession, data *models.SubstitutionGroupCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (h *Handler) CreateSubstitutionGroup(ctx context.Context, session *sessions
 }
 
 func (h *Handler) UpdateSubstitutionGroup(ctx context.Context, session *sessions.AuthedSession, shopId int, substitutionGroupId int, data *models.SubstitutionGroupUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

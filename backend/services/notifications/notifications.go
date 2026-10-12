@@ -32,7 +32,7 @@ type NotificationService struct {
 	drivers map[Notifier]bool
 }
 
-func NewNotificationService(l *slog.Logger, e *events.EventDispatcher) *NotificationService {
+func NewNotificationService(e *events.EventDispatcher, l *slog.Logger) *NotificationService {
 	n := &NotificationService{
 		logger:  l,
 		drivers: make(map[Notifier]bool),
@@ -58,7 +58,7 @@ func (n *NotificationService) NotifyShop(shop *models.Shop, notification Notific
 		go func() {
 			err := driver.NotifyShop(shop, notification)
 			if err != nil {
-				n.logger.Warn("Error while sending shop notification.", "driver", driver.Name(), "err", err)
+				n.logger.Error("Error while sending shop notification.", "driver", driver.Name(), "err", err)
 			}
 		}()
 	}
@@ -73,7 +73,7 @@ func (n *NotificationService) NotifyUsers(to []*models.User, notification Notifi
 		go func() {
 			err := driver.NotifyUsers(to, notification)
 			if err != nil {
-				n.logger.Warn("Error while sending notification.", "driver", driver.Name(), "err", err)
+				n.logger.Error("Error while sending notification.", "driver", driver.Name(), "err", err)
 			}
 		}()
 	}

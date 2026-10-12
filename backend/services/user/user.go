@@ -28,8 +28,7 @@ func NewHandler(store *db.PgxStore, sessions *sessions.Handler, handleError serv
 }
 
 func (h *Handler) CreateUser(ctx context.Context, data *models.UserCreate) (*models.User, error) {
-	h.logger.Debug("Creating user", "id", data.Id)
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return nil, err
 	}
@@ -41,7 +40,7 @@ func (h *Handler) CreateUser(ctx context.Context, data *models.UserCreate) (*mod
 		return nil, err
 	}
 
-	h.logger.Debug("Created user", "id", data.Id)
+	h.logger.DebugContext(ctx, "Created user", "user_id", data.Id)
 	return user, nil
 }
 
@@ -50,7 +49,7 @@ func (h *Handler) GetUser(ctx context.Context, session *sessions.AuthedSession) 
 		return q.GetUser(ctx, session.UserId)
 	})
 	if err != nil {
-		h.logger.Error("Failed to get user from database", "userId", session.UserId, "err", err)
+		h.logger.ErrorContext(ctx, "Failed to get user from database", "user_id", session.UserId, "err", err)
 		return nil, err
 	}
 	return user, nil
@@ -58,10 +57,7 @@ func (h *Handler) GetUser(ctx context.Context, session *sessions.AuthedSession) 
 }
 
 func (h *Handler) UpdateUser(ctx context.Context, session *sessions.AuthedSession, userId string, data *models.UserUpdate) error {
-
-	h.logger.Debug("Updating user", "id", userId)
-
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -88,11 +84,11 @@ func (h *Handler) UpdateUser(ctx context.Context, session *sessions.AuthedSessio
 	})
 
 	if err != nil {
-		h.logger.Error("Error updating user", "id", userId, "error", err)
+		h.logger.ErrorContext(ctx, "Error updating user", "user_id", userId, "err", err)
 		return err
 	}
 
-	h.logger.Debug("Updated user", "id", userId)
+	h.logger.DebugContext(ctx, "Updated user", "user_id", userId)
 
 	return nil
 }

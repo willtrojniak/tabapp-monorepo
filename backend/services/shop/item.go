@@ -11,7 +11,7 @@ import (
 )
 
 func (h *Handler) CreateItem(ctx context.Context, session *sessions.AuthedSession, data *models.ItemCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -31,7 +31,7 @@ func (h *Handler) GetItems(ctx context.Context, session *sessions.AuthedSession,
 }
 
 func (h *Handler) UpdateItem(ctx context.Context, session *sessions.AuthedSession, shopId int, itemId int, data *models.ItemUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -52,14 +52,13 @@ func (h *Handler) GetItem(ctx context.Context, session *sessions.AuthedSession, 
 }
 
 func (h *Handler) DeleteItem(ctx context.Context, session *sessions.AuthedSession, shopId int, itemId int) error {
-	h.logger.Debug("Deleting item", "id", itemId)
 	return WithAuthorizeShopAction(ctx, h.store, session, shopId, authorization.SHOP_ACTION_DELETE_ITEM, func(pq *db.PgxQueries, user *models.User, shop *models.Shop) error {
 		return pq.DeleteItem(ctx, shopId, itemId)
 	})
 }
 
 func (h *Handler) CreateItemVariant(ctx context.Context, session *sessions.AuthedSession, data *models.ItemVariantCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -70,7 +69,7 @@ func (h *Handler) CreateItemVariant(ctx context.Context, session *sessions.Authe
 }
 
 func (h *Handler) UpdateItemVariant(ctx context.Context, session *sessions.AuthedSession, shopId int, itemId int, variantId int, data *models.ItemVariantUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

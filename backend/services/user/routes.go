@@ -11,8 +11,7 @@ import (
 const userIdPath = "userId"
 
 func (h *Handler) RegisterRoutes(router *http.ServeMux) {
-	h.logger.Info("Registering user routes")
-	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError)
+	sessionMux := h.sessions.NewAuthedSessionServeMux(sessions.HandleHTTPSessionError(h.handleError))
 	router.Handle("/users", sessionMux)
 	router.Handle("/users/", sessionMux)
 
@@ -22,10 +21,9 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 }
 
 func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
-	h.logger.Debug("Handling get user")
 	user, err := h.GetUser(r.Context(), session)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 
@@ -35,11 +33,10 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session 
 }
 
 func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
-	h.logger.Debug("Handling Update User")
 	data := models.UserUpdate{}
-	err := models.ReadRequestJson(r, &data)
+	err := models.ReadRequestJson(r, &data, h.logger)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 	if *data.PreferredName == "" {
@@ -48,7 +45,7 @@ func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, sessi
 
 	err = h.UpdateUser(r.Context(), session, session.UserId, &data)
 	if err != nil {
-		h.handleError(w, err)
+		h.handleError(w, r, err)
 		return
 	}
 }
