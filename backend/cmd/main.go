@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	pg, err := db.NewPostgresStorage(context.Background(), pgConfig)
+	pg, err := db.NewPostgresStorage(context.Background(), pgConfig, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -54,17 +54,18 @@ func main() {
 
 	eventDispatcher := events.NewEventDispatcher()
 
-	notificationsService := notifications.NewNotificationService(slog.Default(), eventDispatcher)
+	notificationsService := notifications.NewNotificationService(logger, eventDispatcher)
 	notificationsService.RegisterDriver(notifications.NewMailDriver(
 		env.Envs.EMAIL_CLIENT_USER,
 		env.Envs.EMAIL_CLIENT_PASSWORD,
 		env.Envs.EMAIL_CLIENT_HOST,
-		env.Envs.EMAIL_CLIENT_PORT),
+		env.Envs.EMAIL_CLIENT_PORT,
+		logger),
 		env.Envs.EMAIL_CLIENT_ENABLED)
 	notificationsService.RegisterDriver(notifications.NewSlackDriver(), env.Envs.SLACK_CLIENT_ENABLED)
 
 	gob.Register(uuid.UUID{})
-	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher)
+	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)
 	if err := server.Run(); err != nil {
 		log.Fatal(err)
 	}

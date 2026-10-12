@@ -26,6 +26,7 @@ type APIServer struct {
 	store  *db.PgxStore
 	cache  *redis.Client
 	events *events.EventDispatcher
+	logger *slog.Logger
 }
 
 type Handler interface {
@@ -36,28 +37,32 @@ func NewAPIServer(
 	addr string,
 	store *db.PgxStore,
 	cache *redis.Client,
-	events *events.EventDispatcher) *APIServer {
+	events *events.EventDispatcher,
+	logger *slog.Logger) *APIServer {
 	return &APIServer{
 		addr:   addr,
 		store:  store,
 		cache:  cache,
 		events: events,
+		logger: logger,
 	}
 }
 
 func (s *APIServer) Run() error {
 
-	sessionStore := cache.NewRedisCache(s.cache)
-	sessionManager := sessions.NewSessionsManager(sessionStore, time.Hour*24*30, time.Hour*1, services.HandleHttpError)
-	userHandler := user.NewHandler(s.store, sessionManager, services.HandleHttpError, slog.Default())
+	errorHandler := services.NewErrorHandler(s.logger)
 
-	authHandler, err := auth.NewHandler(services.HandleHttpError, sessionManager, userHandler, slog.Default())
+	sessionStore := cache.NewRedisCache(s.cache)
+	sessionManager := sessions.NewSessionsManager(sessionStore, time.Hour*24*30, time.Hour*1, errorHandler.Handle, s.logger)
+	userHandler := user.NewHandler(s.store, sessionManager, errorHandler.Handle, s.logger)
+
+	authHandler, err := auth.NewHandler(errorHandler.Handle, sessionManager, userHandler, s.logger)
 	if err != nil {
 		log.Fatal("Failed to initialize auth handler")
 	}
 
-	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, services.HandleHttpError, slog.Default())
-	reportHandler := reports.NewReportHandler(s.store, s.events)
+	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, errorHandler.Handle, s.logger)
+	reportHandler := reports.NewReportHandler(s.store, s.events, s.logger)
 
 	router := http.NewServeMux()
 	v1 := http.NewServeMux()
@@ -71,19 +76,26 @@ func (s *APIServer) Run() error {
 	tz, _ := time.LoadLocation("America/New_York")
 	c := cron.New(cron.WithLocation(tz))
 	c.AddFunc("0 6 * * *", func() {
-		slog.Info("Running cron Job")
+		start := time.Now()
 		query := models.GetShopsQueryParams{}
 		shops, err := shopHandler.GetShops(context.Background(), &query)
 		if err != nil {
-			slog.Warn("Error retreiving all shops", "err", err)
+			s.logger.Warn("Error retreiving all shops", "err", err)
 			return
 		}
-		slog.Info("Shops", "count", len(shops))
-		for _, s := range shops {
-			slog.Info("Shop", "id", s.Id)
-			reportHandler.GenerateShopTabOverview(context.Background(), int(s.Id))
+
+		failures := 0
+		for _, shop := range shops {
+			if err := reportHandler.GenerateShopTabOverview(context.Background(), int(shop.Id)); err != nil {
+				failures++
+			}
 		}
-		slog.Info("Finish cron Job")
+
+		s.logger.Info("Daily tab report job finished",
+			"shops", len(shops),
+			"failures", failures,
+			"elapsed", time.Since(start),
+		)
 	})
 	c.Start()
 	defer c.Stop()
@@ -91,10 +103,10 @@ func (s *APIServer) Run() error {
 	return http.ListenAndServe(s.addr,
 		WithMiddleware(
 			RequestIDMiddleware,
-			RequestLoggerMiddleware,
+			RequestLoggerMiddleware(s.logger),
 			CORSMiddleware,
 			func(next http.Handler) http.HandlerFunc {
-				return sessions.HandleHTTPSessionError(sessionManager.RequireCSRFToken(next))
+				return sessions.HandleHTTPSessionError(errorHandler.Handle)(sessionManager.RequireCSRFToken(next))
 			},
 		)(router))
 }

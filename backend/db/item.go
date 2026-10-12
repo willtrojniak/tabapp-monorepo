@@ -20,7 +20,7 @@ func (q *PgxQueries) CreateItem(ctx context.Context, data *models.ItemCreate) er
 		var itemId int
 		err := row.Scan(&itemId)
 		if err != nil {
-			return handlePgxError(err)
+			return handlePgxError(err, q.logger)
 		}
 
 		err = q.setItemCategories(ctx, data.ShopId, itemId, data.CategoryIds)
@@ -52,12 +52,12 @@ func (q *PgxQueries) GetItems(ctx context.Context, shopId int) ([]models.ItemOve
 		})
 
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(err, q.logger)
 	}
 
 	items, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.ItemOverview])
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(err, q.logger)
 	}
 
 	return items, nil
@@ -107,12 +107,12 @@ func (q *PgxQueries) GetItem(ctx context.Context, shopId int, itemId int) (*mode
 		})
 
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(err, q.logger)
 	}
 
 	item, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByNameLax[models.Item])
 	if err != nil {
-		return nil, handlePgxError(err)
+		return nil, handlePgxError(err, q.logger)
 	}
 
 	return item, nil
@@ -132,7 +132,7 @@ func (q *PgxQueries) UpdateItem(ctx context.Context, shopId int, itemId int, dat
 			})
 
 		if err != nil {
-			return handlePgxError(err)
+			return handlePgxError(err, q.logger)
 		}
 
 		if result.RowsAffected() == 0 {
@@ -167,7 +167,7 @@ func (q *PgxQueries) DeleteItem(ctx context.Context, shopId int, itemId int) err
 			"itemId": itemId,
 		})
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -189,7 +189,7 @@ func (q *PgxQueries) CreateItemVariant(ctx context.Context, data *models.ItemVar
 		})
 
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	return nil
@@ -209,7 +209,7 @@ func (q *PgxQueries) UpdateItemVariant(ctx context.Context, shopId int, itemId i
 		})
 
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -230,7 +230,7 @@ func (q *PgxQueries) DeleteItemVariant(ctx context.Context, shopId int, itemId i
 		})
 
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -244,20 +244,20 @@ func (q *PgxQueries) setItemCategories(ctx context.Context, shopId int, itemId i
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_items_to_categories (LIKE items_to_categories INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_items_to_categories"}, []string{"shop_id", "item_id", "item_category_id", "index"}, pgx.CopyFromSlice(len(categoryIds), func(i int) ([]any, error) {
 		return []any{shopId, itemId, categoryIds[i], 0}, nil
 	}))
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO items_to_categories SELECT * FROM _temp_upsert_items_to_categories ON CONFLICT DO NOTHING`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -268,7 +268,7 @@ func (q *PgxQueries) setItemCategories(ctx context.Context, shopId int, itemId i
 			"categories": categoryIds,
 		})
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	return nil
@@ -278,21 +278,21 @@ func (q *PgxQueries) setCategoryItems(ctx context.Context, shopId int, categoryI
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_items_to_categories (LIKE items_to_categories INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_items_to_categories"}, []string{"shop_id", "item_id", "item_category_id", "index"}, pgx.CopyFromSlice(len(itemIds), func(i int) ([]any, error) {
 		return []any{shopId, itemIds[i], categoryId, i}, nil
 	}))
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO items_to_categories SELECT * FROM _temp_upsert_items_to_categories ON CONFLICT (shop_id, item_id, item_category_id) DO UPDATE
     SET index = excluded.index`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -303,7 +303,7 @@ func (q *PgxQueries) setCategoryItems(ctx context.Context, shopId int, categoryI
 			"categoryId": categoryId,
 		})
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	return nil
@@ -313,21 +313,21 @@ func (q *PgxQueries) setItemAddons(ctx context.Context, shopId int, itemId int, 
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_item_addons (LIKE item_addons INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_item_addons"}, []string{"shop_id", "item_id", "addon_id", "index"}, pgx.CopyFromSlice(len(addonItemIds), func(i int) ([]any, error) {
 		return []any{shopId, itemId, addonItemIds[i], i}, nil
 	}))
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO item_addons SELECT * FROM _temp_upsert_item_addons ON CONFLICT (shop_id, item_id, addon_id) DO UPDATE
     SET index = excluded.index`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -338,7 +338,7 @@ func (q *PgxQueries) setItemAddons(ctx context.Context, shopId int, itemId int, 
 			"addonItemIds": addonItemIds,
 		})
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	return nil
@@ -348,7 +348,7 @@ func (q *PgxQueries) setItemSubstitutionGroups(ctx context.Context, shopId int, 
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_items_to_item_substitution_groups (LIKE items_to_item_substitution_groups INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_items_to_item_substitution_groups"},
@@ -356,14 +356,14 @@ func (q *PgxQueries) setItemSubstitutionGroups(ctx context.Context, shopId int, 
 			return []any{shopId, substitutionGroupIds[i], itemId, i}, nil
 		}))
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO items_to_item_substitution_groups SELECT * FROM _temp_upsert_items_to_item_substitution_groups ON CONFLICT (shop_id, substitution_group_id, item_id) DO UPDATE
     SET index = excluded.index`)
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -374,7 +374,7 @@ func (q *PgxQueries) setItemSubstitutionGroups(ctx context.Context, shopId int, 
 			"substitutionGroupIds": substitutionGroupIds,
 		})
 	if err != nil {
-		return handlePgxError(err)
+		return handlePgxError(err, q.logger)
 	}
 
 	return nil

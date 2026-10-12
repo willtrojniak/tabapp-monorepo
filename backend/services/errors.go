@@ -26,7 +26,15 @@ func writeHttpError(w http.ResponseWriter, e HTTPError) {
 
 type HTTPErrorHandler func(http.ResponseWriter, *http.Request, error)
 
-func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
+type ErrorHandler struct {
+	logger *slog.Logger
+}
+
+func NewErrorHandler(logger *slog.Logger) *ErrorHandler {
+	return &ErrorHandler{logger: logger}
+}
+
+func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error) {
 	var httpErr HTTPError
 	switch e := err.(type) {
 	case HTTPError:
@@ -44,9 +52,9 @@ func HandleHttpError(w http.ResponseWriter, r *http.Request, err error) {
 		"err", err,
 	}
 	if httpErr.StatusCode() >= 500 {
-		slog.Error("Request failed", attrs...)
+		h.logger.Error("Request failed", attrs...)
 	} else {
-		slog.Warn("Request failed", attrs...)
+		h.logger.Warn("Request failed", attrs...)
 	}
 
 	writeHttpError(w, httpErr)

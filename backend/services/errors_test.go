@@ -26,17 +26,15 @@ type errorResponseBody struct {
 	Data string `json:"data"`
 }
 
-// captureLogRecord swaps in a temporary JSON log handler for the duration of
-// fn, which must produce exactly one log line, and returns it decoded.
-func captureLogRecord(t *testing.T, fn func()) map[string]any {
-	t.Helper()
+// newTestErrorHandler returns an ErrorHandler whose logs land in the
+// returned buffer, decodable as a single JSON record per call to Handle.
+func newTestErrorHandler() (*ErrorHandler, *bytes.Buffer) {
 	var buf bytes.Buffer
-	prev := slog.Default()
-	slog.SetDefault(slog.New(slog.NewJSONHandler(&buf, nil)))
-	defer slog.SetDefault(prev)
+	return NewErrorHandler(slog.New(slog.NewJSONHandler(&buf, nil))), &buf
+}
 
-	fn()
-
+func decodeLogRecord(t *testing.T, buf *bytes.Buffer) map[string]any {
+	t.Helper()
 	var record map[string]any
 	if err := json.Unmarshal(buf.Bytes(), &record); err != nil {
 		t.Fatalf("failed to decode log record: %v\nraw: %s", err, buf.String())
@@ -48,12 +46,11 @@ func TestHandleHttpError_GenericErrorIs500(t *testing.T) {
 	wantStatus := http.StatusInternalServerError
 	wantLevel := slog.LevelError.String()
 
+	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, testPath, nil)
 
-	record := captureLogRecord(t, func() {
-		HandleHttpError(rec, req, testBoomErr)
-	})
+	eh.Handle(rec, req, testBoomErr)
 
 	if rec.Code != wantStatus {
 		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
@@ -67,6 +64,7 @@ func TestHandleHttpError_GenericErrorIs500(t *testing.T) {
 		t.Errorf("got msg %q, want %q", body.Msg, http.StatusText(wantStatus))
 	}
 
+	record := decodeLogRecord(t, buf)
 	if level, _ := record["level"].(string); level != wantLevel {
 		t.Errorf("got log level %q, want %q", level, wantLevel)
 	}
@@ -76,12 +74,11 @@ func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	wantStatus := http.StatusBadRequest
 	wantLevel := slog.LevelWarn.String()
 
+	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodPost, testPath, nil)
 
-	record := captureLogRecord(t, func() {
-		HandleHttpError(rec, req, NewValidationServiceError(testValidationErr, testValidationMsg))
-	})
+	eh.Handle(rec, req, NewValidationServiceError(testValidationErr, testValidationMsg))
 
 	if rec.Code != wantStatus {
 		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
@@ -95,20 +92,21 @@ func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 		t.Errorf("got data %q, want %q", body.Data, testValidationMsg)
 	}
 
+	record := decodeLogRecord(t, buf)
 	if level, _ := record["level"].(string); level != wantLevel {
 		t.Errorf("got log level %q, want %q", level, wantLevel)
 	}
 }
 
 func TestHandleHttpError_IncludesRequestID(t *testing.T) {
+	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()
 	req := httptest.NewRequest(http.MethodGet, testPath, nil)
 	req = req.WithContext(WithRequestID(req.Context(), testRequestId))
 
-	record := captureLogRecord(t, func() {
-		HandleHttpError(rec, req, testBoomErr)
-	})
+	eh.Handle(rec, req, testBoomErr)
 
+	record := decodeLogRecord(t, buf)
 	if got, _ := record["request_id"].(string); got != testRequestId {
 		t.Errorf("got request_id %q, want %q", got, testRequestId)
 	}

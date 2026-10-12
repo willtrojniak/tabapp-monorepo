@@ -65,22 +65,24 @@ func RequestIDMiddleware(next http.Handler) http.HandlerFunc {
 	}
 }
 
-func RequestLoggerMiddleware(next http.Handler) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		wrappedWriter := wrapResponseWriter(w)
+func RequestLoggerMiddleware(logger *slog.Logger) Middleware {
+	return func(next http.Handler) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
+			wrappedWriter := wrapResponseWriter(w)
 
-		start := time.Now()
-		next.ServeHTTP(&wrappedWriter, r)
-		elapsed := time.Since(start)
+			start := time.Now()
+			next.ServeHTTP(&wrappedWriter, r)
+			elapsed := time.Since(start)
 
-		requestId, _ := services.RequestIDFromContext(r.Context())
-		slog.Info("API",
-			slog.String("request_id", requestId),
-			slog.String("method", r.Method),
-			slog.String("path", r.URL.Path),
-			slog.Int("status", wrappedWriter.Code()),
-			slog.Duration("elapsed", elapsed),
-		)
+			requestId, _ := services.RequestIDFromContext(r.Context())
+			logger.Info("API",
+				slog.String("request_id", requestId),
+				slog.String("method", r.Method),
+				slog.String("path", r.URL.Path),
+				slog.Int("status", wrappedWriter.Code()),
+				slog.Duration("elapsed", elapsed),
+			)
+		}
 	}
 }
 

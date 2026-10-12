@@ -3,6 +3,7 @@ package sessions
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -25,7 +26,7 @@ func TestEmptySession(t *testing.T) {
 func TestSaveSessionToStore(t *testing.T) {
 	cacheImpl := cache.NewMemoryCache()
 	ttl := 2 * time.Minute
-	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil)
+	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil, slog.Default())
 
 	sId := "xyz"
 	s := Session{
@@ -55,7 +56,7 @@ func TestSaveSessionToStore(t *testing.T) {
 func TestSaveSessionToResponse(t *testing.T) {
 	cacheImpl := cache.NewMemoryCache()
 	ttl := 2 * time.Minute
-	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil)
+	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil, slog.Default())
 
 	sId := "xyz"
 	s := Session{
@@ -98,7 +99,7 @@ func TestSaveSessionToResponse(t *testing.T) {
 func TestRetrieveExpiredSession(t *testing.T) {
 	cacheImpl := cache.NewMemoryCache()
 	ttl := 500 * time.Millisecond
-	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil)
+	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil, slog.Default())
 
 	sId := "xyz"
 	s := Session{
@@ -125,7 +126,7 @@ func TestRetrieveExpiredSession(t *testing.T) {
 func TestCSRFMismatch(t *testing.T) {
 	cacheImpl := cache.NewMemoryCache()
 	ttl := 2 * time.Minute
-	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil)
+	sessions := NewSessionsManager(cacheImpl, ttl, ttl, nil, slog.Default())
 
 	request := httptest.NewRequest("POST", "/", nil)
 	ip := readUserIP(request)

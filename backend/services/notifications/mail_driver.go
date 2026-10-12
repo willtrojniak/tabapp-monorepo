@@ -17,9 +17,10 @@ type MailDriver struct {
 	addr     string
 	auth     smtp.Auth
 	template *template.Template
+	logger   *slog.Logger
 }
 
-func NewMailDriver(username, password, host, port string) *MailDriver {
+func NewMailDriver(username, password, host, port string, logger *slog.Logger) *MailDriver {
 	const templateName = "resources/templates/notifications/template.html"
 	auth := smtp.PlainAuth("", username, password, host)
 	t, err := template.ParseFiles(templateName)
@@ -32,6 +33,7 @@ func NewMailDriver(username, password, host, port string) *MailDriver {
 		addr:     fmt.Sprintf("%v:%v", host, port),
 		auth:     auth,
 		template: t,
+		logger:   logger,
 	}
 }
 
@@ -71,7 +73,7 @@ func (driver *MailDriver) NotifyUsers(to []*models.User, n Notification) error {
 		emails,
 		html)
 	if err != nil {
-		slog.Error("Failed to send mail", "emails", emails, "err", err)
+		driver.logger.Error("Failed to send mail", "emails", emails, "err", err)
 	}
 
 	return err
