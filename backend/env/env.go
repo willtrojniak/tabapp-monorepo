@@ -54,7 +54,7 @@ func getConfig() config {
 	}
 
 	if err := godotenv.Load(filepath.Join(envDir, EXT_ENVIRONMENT+".env")); err == nil {
-		slog.Info("Loaded environment", "EXT_ENVIRONMENT", EXT_ENVIRONMENT)
+		slog.Info("Loaded environment", "environment", EXT_ENVIRONMENT)
 	}
 
 	configData := config{}

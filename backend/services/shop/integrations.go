@@ -31,7 +31,7 @@ func (h *Handler) GetShopSlackChannels(ctx context.Context, session *sessions.Au
 			channelData, next, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{Types: []string{"public_channel", "private_channel"}, ExcludeArchived: true, Cursor: cursor})
 			cursor = next
 			if err != nil {
-				h.logger.WarnContext(ctx, "Failed to fetch Slack channels", "shopId", shopId, "err", err)
+				h.logger.ErrorContext(ctx, "Failed to fetch Slack channels", "shop_id", shopId, "err", err)
 				return services.NewInternalServiceError(err)
 			}
 

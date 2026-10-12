@@ -53,7 +53,7 @@ func ValidateData(ctx context.Context, data interface{}, logger *slog.Logger) er
 		for _, err := range err.(validator.ValidationErrors) {
 			errors[err.Field()] = services.ValidationError{Value: err.Value(), Error: err.Tag()}
 		}
-		logger.DebugContext(ctx, "Data validation failed", "errors", errors)
+		logger.DebugContext(ctx, "Data validation failed", "validation_errors", errors)
 		return services.NewValidationServiceError(err, errors)
 
 	}

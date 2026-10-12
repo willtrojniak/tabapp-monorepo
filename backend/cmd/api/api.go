@@ -80,7 +80,7 @@ func (s *APIServer) Run() error {
 		query := models.GetShopsQueryParams{}
 		shops, err := shopHandler.GetShops(context.Background(), &query)
 		if err != nil {
-			s.logger.Warn("Error retreiving all shops", "err", err)
+			s.logger.Error("Error retreiving all shops", "err", err)
 			return
 		}
 
