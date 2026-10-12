@@ -2,15 +2,18 @@ package notifications
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/slack-go/slack"
 	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
-type SlackDriver struct{}
+type SlackDriver struct {
+	logger *slog.Logger
+}
 
-func NewSlackDriver() *SlackDriver {
-	return &SlackDriver{}
+func NewSlackDriver(logger *slog.Logger) *SlackDriver {
+	return &SlackDriver{logger: logger}
 }
 
 func (d *SlackDriver) Name() string { return "Slack" }
@@ -22,6 +25,9 @@ func (d *SlackDriver) NotifyShop(shop *models.Shop, n Notification) error {
 
 	client := slack.New(shop.SlackAccessToken.String())
 	_, _, _, err := client.SendMessage(channel, slack.MsgOptionBlocks(d.toMsg(n)...))
+	if err != nil {
+		d.logger.Error("Failed to send Slack message", "shop_id", shop.Id, "channel", channel, "err", err)
+	}
 	return err
 }
 func (d *SlackDriver) NotifyUsers([]*models.User, Notification) error { return nil }

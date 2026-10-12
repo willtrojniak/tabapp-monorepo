@@ -32,7 +32,7 @@ type NotificationService struct {
 	drivers map[Notifier]bool
 }
 
-func NewNotificationService(l *slog.Logger, e *events.EventDispatcher) *NotificationService {
+func NewNotificationService(e *events.EventDispatcher, l *slog.Logger) *NotificationService {
 	n := &NotificationService{
 		logger:  l,
 		drivers: make(map[Notifier]bool),

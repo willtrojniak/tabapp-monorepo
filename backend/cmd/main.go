@@ -56,7 +56,7 @@ func main() {
 
 	eventDispatcher := events.NewEventDispatcher()
 
-	notificationsService := notifications.NewNotificationService(logger, eventDispatcher)
+	notificationsService := notifications.NewNotificationService(eventDispatcher, logger)
 	notificationsService.RegisterDriver(notifications.NewMailDriver(
 		env.Envs.EMAIL_CLIENT_USER,
 		env.Envs.EMAIL_CLIENT_PASSWORD,
@@ -64,7 +64,7 @@ func main() {
 		env.Envs.EMAIL_CLIENT_PORT,
 		logger),
 		env.Envs.EMAIL_CLIENT_ENABLED)
-	notificationsService.RegisterDriver(notifications.NewSlackDriver(), env.Envs.SLACK_CLIENT_ENABLED)
+	notificationsService.RegisterDriver(notifications.NewSlackDriver(logger), env.Envs.SLACK_CLIENT_ENABLED)
 
 	gob.Register(uuid.UUID{})
 	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)
