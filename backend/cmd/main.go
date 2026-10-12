@@ -15,6 +15,7 @@ import (
 	"github.com/willtrojniak/tabapp-monorepo/db"
 	"github.com/willtrojniak/tabapp-monorepo/env"
 	"github.com/willtrojniak/tabapp-monorepo/internal/encryptor"
+	"github.com/willtrojniak/tabapp-monorepo/services"
 	"github.com/willtrojniak/tabapp-monorepo/services/events"
 	"github.com/willtrojniak/tabapp-monorepo/services/notifications"
 )
@@ -26,9 +27,10 @@ var logLevels = map[string]slog.Level{
 
 func main() {
 
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+	jsonHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: logLevels[env.EXT_ENVIRONMENT],
-	}))
+	})
+	logger := slog.New(services.NewRequestIDHandler(jsonHandler))
 	slog.SetDefault(logger)
 
 	env.Load()

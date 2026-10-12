@@ -18,7 +18,7 @@ func (q *PgxQueries) CreateLocation(ctx context.Context, data *models.LocationCr
 	var categoryId int
 	err := row.Scan(&categoryId)
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	return nil
@@ -34,7 +34,7 @@ func (q *PgxQueries) UpdateLocation(ctx context.Context, shopId int, locationId 
 			"locationId": locationId,
 		})
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -52,7 +52,7 @@ func (q *PgxQueries) DeleteLocation(ctx context.Context, shopId int, locationId 
 			"locationId": locationId,
 		})
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {

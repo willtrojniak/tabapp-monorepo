@@ -20,7 +20,7 @@ func (q *PgxQueries) CreateCategory(ctx context.Context, data *models.CategoryCr
 		var categoryId int
 		err := row.Scan(&categoryId)
 		if err != nil {
-			return handlePgxError(err, q.logger)
+			return handlePgxError(ctx, err, q.logger)
 		}
 
 		err = q.setCategoryItems(ctx, data.ShopId, categoryId, data.ItemIds)
@@ -44,12 +44,12 @@ func (q *PgxQueries) GetCategories(ctx context.Context, shopId int) ([]models.Ca
 			"shopId": shopId,
 		})
 	if err != nil {
-		return nil, handlePgxError(err, q.logger)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 
 	categories, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.Category])
 	if err != nil {
-		return nil, handlePgxError(err, q.logger)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 
 	return categories, nil
@@ -66,7 +66,7 @@ func (q *PgxQueries) UpdateCategory(ctx context.Context, shopId int, categoryId 
 				"categoryId": categoryId,
 			})
 		if err != nil {
-			return handlePgxError(err, q.logger)
+			return handlePgxError(ctx, err, q.logger)
 		}
 
 		if result.RowsAffected() == 0 {
@@ -90,7 +90,7 @@ func (q *PgxQueries) DeleteCategory(ctx context.Context, shopId int, categoryId 
 			"categoryId": categoryId,
 		})
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {

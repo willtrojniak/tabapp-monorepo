@@ -74,9 +74,7 @@ func RequestLoggerMiddleware(logger *slog.Logger) Middleware {
 			next.ServeHTTP(&wrappedWriter, r)
 			elapsed := time.Since(start)
 
-			requestId, _ := services.RequestIDFromContext(r.Context())
-			logger.Info("API",
-				slog.String("request_id", requestId),
+			logger.InfoContext(r.Context(), "API",
 				slog.String("method", r.Method),
 				slog.String("path", r.URL.Path),
 				slog.Int("status", wrappedWriter.Code()),

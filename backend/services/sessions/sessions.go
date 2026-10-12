@@ -105,7 +105,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 
 	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		s.logger.Warn("Error while creating new session.", "err", err)
+		s.logger.WarnContext(r.Context(), "Error while creating new session.", "err", err)
 		return nil, err
 	}
 
@@ -118,13 +118,13 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		// The client has a previous saved session
 		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			s.logger.Warn("Failed to delete old session from store.", "sessionId", oldSessionId, "error", err)
+			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "sessionId", oldSessionId, "err", err)
 		}
 	}
 
 	s.saveSessionToResponse(w, session)
 
-	s.logger.Debug("Session created", "sessionId", session.Id)
+	s.logger.DebugContext(r.Context(), "Session created", "sessionId", session.Id)
 
 	return session, nil
 }
@@ -141,7 +141,7 @@ func (s *Handler) GetSession(r *http.Request) (*Session, error) {
 	}
 
 	if session.data.Ip != readUserIP(r) {
-		s.logger.Warn("Attempted to access session with different ip", "stored-ip", session.data.Ip, "request-ip", readUserIP(r))
+		s.logger.WarnContext(r.Context(), "Attempted to access session with different ip", "stored-ip", session.data.Ip, "request-ip", readUserIP(r))
 		return nil, ErrIpMismatch
 	}
 
@@ -247,13 +247,13 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		s.logger.Warn("Failed to marshal session data.", "sessionId", session.Id, "err", err)
+		s.logger.WarnContext(ctx, "Failed to marshal session data.", "sessionId", session.Id, "err", err)
 		return err
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		s.logger.Warn("Failed to save session to store.", "sessionId", session.Id, "err", err)
+		s.logger.WarnContext(ctx, "Failed to save session to store.", "sessionId", session.Id, "err", err)
 		return err
 	}
 

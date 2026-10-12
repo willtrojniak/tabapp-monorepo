@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) CreateCategory(ctx context.Context, session *sessions.AuthedSession, data *models.CategoryCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -26,7 +26,7 @@ func (h *Handler) GetCategories(ctx context.Context, shopId int) ([]models.Categ
 }
 
 func (h *Handler) UpdateCategory(ctx context.Context, session *sessions.AuthedSession, shopId int, categoryId int, data *models.CategoryUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

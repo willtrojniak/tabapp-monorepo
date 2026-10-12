@@ -30,7 +30,7 @@ type errorResponseBody struct {
 // returned buffer, decodable as a single JSON record per call to Handle.
 func newTestErrorHandler() (*ErrorHandler, *bytes.Buffer) {
 	var buf bytes.Buffer
-	return NewErrorHandler(slog.New(slog.NewJSONHandler(&buf, nil))), &buf
+	return NewErrorHandler(slog.New(NewRequestIDHandler(slog.NewJSONHandler(&buf, nil)))), &buf
 }
 
 func decodeLogRecord(t *testing.T, buf *bytes.Buffer) map[string]any {

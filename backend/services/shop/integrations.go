@@ -31,7 +31,7 @@ func (h *Handler) GetShopSlackChannels(ctx context.Context, session *sessions.Au
 			channelData, next, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{Types: []string{"public_channel", "private_channel"}, ExcludeArchived: true, Cursor: cursor})
 			cursor = next
 			if err != nil {
-				h.logger.Warn("Failed to fetch Slack channels", "shopId", shopId, "err", err)
+				h.logger.WarnContext(ctx, "Failed to fetch Slack channels", "shopId", shopId, "err", err)
 				return services.NewInternalServiceError(err)
 			}
 
@@ -55,7 +55,7 @@ func (h *Handler) GetShopSlackChannels(ctx context.Context, session *sessions.Au
 }
 
 func (h *Handler) UpdateShopSlackChannels(ctx context.Context, s *sessions.AuthedSession, shopId int, data *models.ShopSlackDataUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

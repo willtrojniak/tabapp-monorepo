@@ -20,7 +20,7 @@ func (q *PgxQueries) CreateSubstitutionGroup(ctx context.Context, data *models.S
 		err := row.Scan(&substitutionGroupId)
 
 		if err != nil {
-			return handlePgxError(err, q.logger)
+			return handlePgxError(ctx, err, q.logger)
 		}
 
 		err = q.setSubstitutionGroupSubstitutions(ctx, data.ShopId, substitutionGroupId, data.SubstitutionItemIds)
@@ -44,7 +44,7 @@ func (q *PgxQueries) UpdateSubstitutionGroup(ctx context.Context, shopId int, su
 			})
 
 		if err != nil {
-			return handlePgxError(err, q.logger)
+			return handlePgxError(ctx, err, q.logger)
 		}
 
 		if result.RowsAffected() == 0 {
@@ -74,12 +74,12 @@ func (q *PgxQueries) GetSubstitutionGroups(ctx context.Context, shopId int) ([]m
 		})
 
 	if err != nil {
-		return nil, handlePgxError(err, q.logger)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 
 	data, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.SubstitutionGroup])
 	if err != nil {
-		return nil, handlePgxError(err, q.logger)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 
 	return data, nil
@@ -95,7 +95,7 @@ func (q *PgxQueries) DeleteSubstitutionGroup(ctx context.Context, shopId int, su
 		})
 
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	if result.RowsAffected() == 0 {
@@ -109,7 +109,7 @@ func (q *PgxQueries) setSubstitutionGroupSubstitutions(ctx context.Context, shop
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_item_substitution_groups_to_items (LIKE item_substitution_groups_to_items INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_item_substitution_groups_to_items"},
@@ -117,14 +117,14 @@ func (q *PgxQueries) setSubstitutionGroupSubstitutions(ctx context.Context, shop
 			return []any{shopId, substitutionGroupId, substitutionItemIds[i], i}, nil
 		}))
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO item_substitution_groups_to_items SELECT * FROM _temp_upsert_item_substitution_groups_to_items ON CONFLICT (shop_id, substitution_group_id, item_id) DO UPDATE
     SET index = excluded.index`)
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -135,7 +135,7 @@ func (q *PgxQueries) setSubstitutionGroupSubstitutions(ctx context.Context, shop
 			"substitutionItemIds": substitutionItemIds,
 		})
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 
 	return nil

@@ -14,7 +14,7 @@ import (
 
 func (h *Handler) CreateTab(ctx context.Context, session *sessions.AuthedSession, data *models.TabCreate) error {
 	// Request data validation
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func (h *Handler) CreateTab(ctx context.Context, session *sessions.AuthedSession
 }
 
 func (h *Handler) UpdateTab(ctx context.Context, session *sessions.AuthedSession, shopId int, tabId int, data *models.TabUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -68,18 +68,18 @@ func (h *Handler) UpdateTab(ctx context.Context, session *sessions.AuthedSession
 
 		// Next, check if have permission to update the tab directly
 		if ok, err := authorization.AuthorizeTabAction(user, &authorization.TabTarget{Tab: tab, Shop: shop}, authorization.TAB_ACTION_UPDATE); err == nil && ok {
-			h.logger.Debug("Applying tab update directly", "shopId", shopId, "tabId", tabId)
+			h.logger.DebugContext(ctx, "Applying tab update directly", "shopId", shopId, "tabId", tabId)
 			return pq.UpdateTab(ctx, shopId, tabId, data)
 		}
 
 		// Otherwise:
 		// Check if part of the tab data has changed and request updates
 		if !(reflect.DeepEqual(tab.TabBase, data.TabBase)) || !reflect.DeepEqual(tabLocationIds, data.LocationIds) {
-			h.logger.Debug("Recording requested tab data update", "shopId", shopId, "tabId", tabId)
+			h.logger.DebugContext(ctx, "Recording requested tab data update", "shopId", shopId, "tabId", tabId)
 			err = pq.SetTabUpdates(ctx, shopId, tabId, data)
 		} else {
 			// If not, only update the people on the tab
-			h.logger.Debug("Recording requested tab verification list update", "shopId", shopId, "tabId", tabId)
+			h.logger.DebugContext(ctx, "Recording requested tab verification list update", "shopId", shopId, "tabId", tabId)
 			err = pq.SetTabUsers(ctx, shopId, tabId, data.VerificationList)
 		}
 
@@ -205,7 +205,7 @@ func (h *Handler) GetTabById(ctx context.Context, session *sessions.AuthedSessio
 }
 
 func (h *Handler) AddOrderToTab(ctx context.Context, session *sessions.AuthedSession, shopId int, tabId int, data *models.BillOrderCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -216,7 +216,7 @@ func (h *Handler) AddOrderToTab(ctx context.Context, session *sessions.AuthedSes
 }
 
 func (h *Handler) RemoveOrderFromTab(ctx context.Context, session *sessions.AuthedSession, shopId int, tabId int, data *models.BillOrderCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

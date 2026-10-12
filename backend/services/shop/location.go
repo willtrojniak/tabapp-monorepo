@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) CreateLocation(ctx context.Context, session *sessions.AuthedSession, data *models.LocationCreate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (h *Handler) CreateLocation(ctx context.Context, session *sessions.AuthedSe
 }
 
 func (h *Handler) UpdateLocation(ctx context.Context, session *sessions.AuthedSession, shopId int, locationId int, data *models.LocationUpdate) error {
-	err := models.ValidateData(data, h.logger)
+	err := models.ValidateData(ctx, data, h.logger)
 	if err != nil {
 		return err
 	}

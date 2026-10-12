@@ -75,7 +75,7 @@ func (h *Handler) Authorize(r *http.Request, cfg *oauth2.Config) (*oauth2.Token,
 	// Check that the CSRF token matches
 	state, err := r.Cookie("state")
 	if err != nil {
-		h.logger.Warn("Missing State Cookie")
+		h.logger.WarnContext(r.Context(), "Missing State Cookie")
 		return nil, services.NewInternalServiceError(err)
 	}
 

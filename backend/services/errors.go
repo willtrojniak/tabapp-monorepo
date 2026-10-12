@@ -43,18 +43,16 @@ func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error)
 		httpErr = NewInternalServiceError(err)
 	}
 
-	requestId, _ := RequestIDFromContext(r.Context())
 	attrs := []any{
-		"request_id", requestId,
 		"method", r.Method,
 		"path", r.URL.Path,
 		"status", httpErr.StatusCode(),
 		"err", err,
 	}
 	if httpErr.StatusCode() >= 500 {
-		h.logger.Error("Request failed", attrs...)
+		h.logger.ErrorContext(r.Context(), "Request failed", attrs...)
 	} else {
-		h.logger.Warn("Request failed", attrs...)
+		h.logger.WarnContext(r.Context(), "Request failed", attrs...)
 	}
 
 	writeHttpError(w, httpErr)

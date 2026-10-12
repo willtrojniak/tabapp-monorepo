@@ -38,7 +38,7 @@ func NewPostgresStorage(ctx context.Context, config *pgxpool.Config, logger *slo
 func (s *PgxStore) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(err, s.logger)
+		return nil, handlePgxError(ctx, err, s.logger)
 	}
 	return &PgxQueries{tx: tx, logger: s.logger}, nil
 }
@@ -51,7 +51,7 @@ type PgxQueries struct {
 func (q *PgxQueries) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := q.tx.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(err, q.logger)
+		return nil, handlePgxError(ctx, err, q.logger)
 	}
 	return &PgxQueries{tx: tx, logger: q.logger}, nil
 }
@@ -82,7 +82,7 @@ func WithTx(ctx context.Context, conn PgxConn, fn func(*PgxQueries) error) error
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return handlePgxError(err, q.logger)
+		return handlePgxError(ctx, err, q.logger)
 	}
 	return nil
 }
@@ -101,12 +101,12 @@ func WithTxRet[T any](ctx context.Context, conn PgxConn, fn func(*PgxQueries) (T
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return *new(T), handlePgxError(err, q.logger)
+		return *new(T), handlePgxError(ctx, err, q.logger)
 	}
 	return val, nil
 }
 
-func handlePgxError(err error, logger *slog.Logger) error {
+func handlePgxError(ctx context.Context, err error, logger *slog.Logger) error {
 	var pgerr *pgconn.PgError
 
 	if errors.Is(err, pgx.ErrNoRows) {
@@ -116,6 +116,6 @@ func handlePgxError(err error, logger *slog.Logger) error {
 	if errors.As(err, &pgerr) && pgerr.Code == pgerrcode.UniqueViolation {
 		return services.NewDataConflictServiceError(err)
 	}
-	logger.Warn("Database operation failed", "err", err)
+	logger.WarnContext(ctx, "Database operation failed", "err", err)
 	return services.NewInternalServiceError(err)
 }
