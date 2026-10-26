@@ -1,8 +1,6 @@
 package env
 
 import (
-	"fmt"
-	"log"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -50,7 +48,7 @@ func getConfig() config {
 	envDir := os.Getenv("ENV_DIR")
 
 	if err := godotenv.Load(filepath.Join(envDir, "base.env")); err != nil {
-		log.Fatal("Failed to load base env file!")
+		fatal("Failed to load base env file", "err", err)
 	}
 
 	if err := godotenv.Load(filepath.Join(envDir, EXT_ENVIRONMENT+".env")); err == nil {
@@ -69,7 +67,7 @@ func getConfig() config {
 		case reflect.Bool:
 			configStruct.Field(i).SetBool(getEnvBoolOrFail(key))
 		default:
-			log.Fatal(fmt.Sprintf("Unknown type for key '%v'", key))
+			fatal("Unknown config field type", "key", key)
 		}
 	}
 
@@ -79,7 +77,7 @@ func getConfig() config {
 func getEnvStringOrFail(key string) string {
 	val, exists := os.LookupEnv(key)
 	if !exists {
-		log.Fatal(key + " not set!")
+		fatal("Environment variable not set", "key", key)
 	}
 	return val
 }
@@ -92,7 +90,12 @@ func getEnvBoolOrFail(key string) bool {
 	case "false":
 		return false
 	default:
-		log.Fatal(fmt.Sprintf("%v not valid bool value ('%v')", key, str))
+		fatal("Invalid bool value for environment variable", "key", key, "value", str)
 	}
 	return false
+}
+
+func fatal(msg string, args ...any) {
+	slog.Error(msg, args...)
+	os.Exit(1)
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 
@@ -23,38 +23,43 @@ func main() {
 
 	m, err := migrate.New(migrationsPath, databaseURL)
 	if err != nil {
-		log.Fatal(err)
+		fatal("Failed to initialize migrations", "err", err)
 	}
 
 	if len(os.Args) != 2 {
-		log.Fatal("Expects either 'up', 'down', or 'drop' as second and only argument")
+		fatal("Expects either 'up', 'down', 'drop', or a step count as the only argument")
 	}
 
 	cmd := os.Args[1]
 	switch cmd {
 	case "up":
 		if err := m.Up(); err != nil {
-			log.Fatal(err)
+			fatal("Migration failed", "command", cmd, "err", err)
 		}
 		return
 	case "down":
 		if err := m.Down(); err != nil {
-			log.Fatal(err)
+			fatal("Migration failed", "command", cmd, "err", err)
 		}
 		return
 	case "drop":
 		if err := m.Drop(); err != nil {
-			log.Fatal(err)
+			fatal("Migration failed", "command", cmd, "err", err)
 		}
 		return
 	}
 
 	if val, err := strconv.Atoi(cmd); err == nil {
 		if err := m.Steps(val); err != nil {
-			log.Fatal(err)
+			fatal("Migration failed", "command", cmd, "err", err)
 		}
 		return
 	}
 
-	log.Fatal("Expected 'up', 'down', or 'drop', got: " + cmd)
+	fatal("Unknown migration command", "command", cmd)
+}
+
+func fatal(msg string, args ...any) {
+	slog.Error(msg, args...)
+	os.Exit(1)
 }

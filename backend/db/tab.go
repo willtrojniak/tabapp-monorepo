@@ -238,7 +238,6 @@ func (q *PgxQueries) CloseTab(ctx context.Context, shopId int, tabId int) error 
 
 func (q *PgxQueries) MarkTabBillPaid(ctx context.Context, shopId int, tabId int, billId int) error {
 	endDate := models.DateOf(time.Now())
-	println(endDate.String())
 	result, err := q.tx.Exec(ctx, `
     UPDATE tab_bills 
     SET (is_paid, end_date) = (true, @endDate)
@@ -540,7 +539,6 @@ func (q *PgxQueries) SetTabUpdateLocations(ctx context.Context, shopId int, tabI
 
 func (q *PgxQueries) insertBill(ctx context.Context, shopId int, tabId int, startDate models.Date, endDate models.Date) (int, error) {
 	var billId int
-	println("start ", startDate.String(), "end", endDate.String())
 
 	row := q.tx.QueryRow(ctx, `
     INSERT INTO tab_bills 
