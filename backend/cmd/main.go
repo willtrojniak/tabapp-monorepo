@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 
@@ -39,12 +38,14 @@ func main() {
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
 	pgConfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error("Failed to parse postgres config", "err", err)
+		os.Exit(1)
 	}
 
 	pg, err := db.NewPostgresStorage(context.Background(), pgConfig, logger)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error("Failed to connect to postgres", "err", err)
+		os.Exit(1)
 	}
 
 	opts := redis.Options{
@@ -69,7 +70,8 @@ func main() {
 	gob.Register(uuid.UUID{})
 	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)
 	if err := server.Run(); err != nil {
-		log.Fatal(err)
+		logger.Error("Server exited", "err", err)
+		os.Exit(1)
 	}
 
 }

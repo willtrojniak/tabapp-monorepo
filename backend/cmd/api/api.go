@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -58,7 +58,7 @@ func (s *APIServer) Run() error {
 
 	authHandler, err := auth.NewHandler(errorHandler.Handle, sessionManager, userHandler, s.logger)
 	if err != nil {
-		log.Fatal("Failed to initialize auth handler")
+		return fmt.Errorf("failed to initialize auth handler: %w", err)
 	}
 
 	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, errorHandler.Handle, s.logger)

@@ -1,13 +1,14 @@
 package models
 
 import (
-	"log"
 	"reflect"
 	"regexp"
 	"time"
 
 	"github.com/go-playground/validator/v10"
 )
+
+var chartstringPattern = regexp.MustCompile(`^([A-z0-9]{5})[ |-]?([A-z0-9]{5})(?:(?:-|\s)([A-z0-9]{5})|([A-z0-9]{5}))?$`)
 
 type TabStatus int
 
@@ -185,10 +186,6 @@ func TabUpdateStructLevelValidation(sl validator.StructLevel) {
 		sl.ReportError(data.EndDate, tag, field.Name, "endafterstart", "")
 	}
 
-	chartstringPattern, err := regexp.Compile(`^([A-z0-9]{5})[ |-]?([A-z0-9]{5})(?:(?:-|\s)([A-z0-9]{5})|([A-z0-9]{5}))?$`)
-	if err != nil {
-		log.Fatal("Failed to compile chartstring expression")
-	}
 	if data.PaymentMethod == "chartstring" && !chartstringPattern.MatchString(data.PaymentDetails) {
 		field, _ := reflect.ValueOf(data).Type().FieldByName("PaymentDetails")
 		tag, ok := field.Tag.Lookup("json")
