@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +31,8 @@ type errorResponseBody struct {
 // returned buffer, decodable as a single JSON record per call to Handle.
 func newTestErrorHandler() (*ErrorHandler, *bytes.Buffer) {
 	var buf bytes.Buffer
-	return NewErrorHandler(slog.New(NewRequestIDHandler(slog.NewJSONHandler(&buf, nil)))), &buf
+	jsonHandler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+	return NewErrorHandler(slog.New(NewRequestIDHandler(jsonHandler))), &buf
 }
 
 func decodeLogRecord(t *testing.T, buf *bytes.Buffer) map[string]any {
@@ -72,7 +74,7 @@ func TestHandleHttpError_GenericErrorIs500(t *testing.T) {
 
 func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	wantStatus := http.StatusBadRequest
-	wantLevel := slog.LevelWarn.String()
+	wantLevel := slog.LevelDebug.String()
 
 	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()
@@ -95,6 +97,39 @@ func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	record := decodeLogRecord(t, buf)
 	if level, _ := record["level"].(string); level != wantLevel {
 		t.Errorf("got log level %q, want %q", level, wantLevel)
+	}
+}
+
+func TestHandleHttpError_WrappedServiceErrorKeepsItsStatus(t *testing.T) {
+	wantStatus := http.StatusNotFound
+
+	eh, _ := newTestErrorHandler()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, testPath, nil)
+
+	eh.Handle(rec, req, fmt.Errorf("get widget: %w", NewNotFoundServiceError(testBoomErr)))
+
+	if rec.Code != wantStatus {
+		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
+	}
+}
+
+func TestHandleHttpError_ServiceErrorWithoutCause(t *testing.T) {
+	wantStatus := http.StatusUnsupportedMediaType
+
+	eh, buf := newTestErrorHandler()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, testPath, nil)
+
+	eh.Handle(rec, req, NewServiceError(nil, wantStatus, nil))
+
+	if rec.Code != wantStatus {
+		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
+	}
+
+	record := decodeLogRecord(t, buf)
+	if got, _ := record["err"].(string); got != http.StatusText(wantStatus) {
+		t.Errorf("got err %q, want %q", got, http.StatusText(wantStatus))
 	}
 }
 

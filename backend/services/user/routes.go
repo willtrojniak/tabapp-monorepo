@@ -34,7 +34,7 @@ func (h *Handler) handleGetUser(w http.ResponseWriter, r *http.Request, session 
 
 func (h *Handler) handleUpdateUser(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 	data := models.UserUpdate{}
-	err := models.ReadRequestJson(r, &data, h.logger)
+	err := models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return

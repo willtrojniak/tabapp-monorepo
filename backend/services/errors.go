@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -36,10 +37,7 @@ func NewErrorHandler(logger *slog.Logger) *ErrorHandler {
 
 func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error) {
 	var httpErr HTTPError
-	switch e := err.(type) {
-	case HTTPError:
-		httpErr = e
-	default:
+	if !errors.As(err, &httpErr) {
 		httpErr = NewInternalServiceError(err)
 	}
 
@@ -52,7 +50,7 @@ func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error)
 	if httpErr.StatusCode() >= 500 {
 		h.logger.ErrorContext(r.Context(), "Request failed", attrs...)
 	} else {
-		h.logger.WarnContext(r.Context(), "Request failed", attrs...)
+		h.logger.DebugContext(r.Context(), "Request failed", attrs...)
 	}
 
 	writeHttpError(w, httpErr)
@@ -112,6 +110,9 @@ func (e *ServiceError) Data() interface{} {
 }
 
 func (e *ServiceError) Error() string {
+	if e.err == nil {
+		return e.msg
+	}
 	return e.err.Error()
 }
 

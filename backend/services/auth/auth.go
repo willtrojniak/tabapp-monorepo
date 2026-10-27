@@ -75,12 +75,12 @@ func (h *Handler) Authorize(r *http.Request, cfg *oauth2.Config) (*oauth2.Token,
 	// Check that the CSRF token matches
 	state, err := r.Cookie("state")
 	if err != nil {
-		h.logger.WarnContext(r.Context(), "Missing State Cookie")
-		return nil, services.NewInternalServiceError(err)
+		return nil, services.NewServiceError(err, http.StatusBadRequest, nil)
 	}
 
 	if r.URL.Query().Get("state") != state.Value {
-		return nil, fmt.Errorf("State did not match")
+		h.logger.WarnContext(r.Context(), "OAuth state mismatch")
+		return nil, services.NewUnauthorizedServiceError(fmt.Errorf("state did not match"))
 	}
 
 	// Exchange the code for a token

@@ -60,10 +60,7 @@ var ErrIpMismatch = IpMismatchError{}
 type SessionNotAuthedError struct{}
 type NoSessionError struct{}
 type NoCSRFTokenError struct{}
-type CSRFMismatchError struct {
-	stored string
-	seen   string
-}
+type CSRFMismatchError struct{}
 type IpMismatchError struct{}
 
 func (e SessionNotAuthedError) Error() string {
@@ -79,11 +76,7 @@ func (e NoCSRFTokenError) Error() string {
 }
 
 func (e CSRFMismatchError) Error() string {
-	return fmt.Sprintf("Request CSRF Token (%s) did not match stored (%s)", e.seen, e.stored)
-}
-
-func (e CSRFMismatchError) Is(target error) bool {
-	return target == ErrCSRFMismatch
+	return "Request CSRF token did not match stored token"
 }
 
 func (e IpMismatchError) Error() string {
@@ -105,8 +98,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 
 	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		s.logger.ErrorContext(r.Context(), "Error while creating new session.", "err", err)
-		return nil, err
+		return nil, fmt.Errorf("create session: %w", err)
 	}
 
 	err = s.saveSessionToStore(r.Context(), session)
@@ -118,13 +110,13 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		// The client has a previous saved session
 		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "session_id", oldSessionId, "err", err)
+			s.logger.WarnContext(r.Context(), "Failed to delete old session from store", "err", err)
 		}
 	}
 
 	s.saveSessionToResponse(w, session)
 
-	s.logger.DebugContext(r.Context(), "Session created", "session_id", session.Id)
+	s.logger.DebugContext(r.Context(), "Session created", "user_id", session.data.UserId)
 
 	return session, nil
 }
@@ -178,7 +170,9 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			s.saveSessionToResponse(w, session)
 		} else {
 			// Create a new anonymous session if there is no active session
-			s.SetNewSession(w, r, nil)
+			if _, err := s.SetNewSession(w, r, nil); err != nil {
+				s.logger.ErrorContext(r.Context(), "Failed to create anonymous session", "err", err)
+			}
 		}
 
 		if !safeMethod {
@@ -187,10 +181,8 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			}
 
 			if requestToken != session.data.CSRFToken {
-				return CSRFMismatchError{
-					stored: session.data.CSRFToken,
-					seen:   requestToken,
-				}
+				s.logger.WarnContext(r.Context(), "CSRF token mismatch", "user_id", session.data.UserId)
+				return ErrCSRFMismatch
 			}
 		}
 
@@ -247,14 +239,12 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to marshal session data.", "session_id", session.Id, "err", err)
-		return err
+		return fmt.Errorf("marshal session: %w", err)
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to save session to store.", "session_id", session.Id, "err", err)
-		return err
+		return fmt.Errorf("save session: %w", err)
 	}
 
 	return nil

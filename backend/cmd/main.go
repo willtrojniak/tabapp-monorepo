@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
-	"log"
 	"log/slog"
 	"os"
 
@@ -39,12 +38,12 @@ func main() {
 	databaseURL := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", env.Envs.POSTGRES_USER, env.Envs.POSTGRES_PASSWORD, env.Envs.POSTGRES_HOST, env.Envs.POSTGRES_PORT, env.Envs.POSTGRES_DB)
 	pgConfig, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
-		log.Fatal(err)
+		fatal("Failed to parse postgres config", "err", err)
 	}
 
-	pg, err := db.NewPostgresStorage(context.Background(), pgConfig, logger)
+	pg, err := db.NewPostgresStorage(context.Background(), pgConfig)
 	if err != nil {
-		log.Fatal(err)
+		fatal("Failed to connect to postgres", "err", err)
 	}
 
 	opts := redis.Options{
@@ -61,15 +60,19 @@ func main() {
 		env.Envs.EMAIL_CLIENT_USER,
 		env.Envs.EMAIL_CLIENT_PASSWORD,
 		env.Envs.EMAIL_CLIENT_HOST,
-		env.Envs.EMAIL_CLIENT_PORT,
-		logger),
+		env.Envs.EMAIL_CLIENT_PORT),
 		env.Envs.EMAIL_CLIENT_ENABLED)
-	notificationsService.RegisterDriver(notifications.NewSlackDriver(logger), env.Envs.SLACK_CLIENT_ENABLED)
+	notificationsService.RegisterDriver(notifications.NewSlackDriver(), env.Envs.SLACK_CLIENT_ENABLED)
 
 	gob.Register(uuid.UUID{})
 	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)
 	if err := server.Run(); err != nil {
-		log.Fatal(err)
+		fatal("Server exited", "err", err)
 	}
 
+}
+
+func fatal(msg string, args ...any) {
+	slog.Error(msg, args...)
+	os.Exit(1)
 }

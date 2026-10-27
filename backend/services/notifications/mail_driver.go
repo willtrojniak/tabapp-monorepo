@@ -3,7 +3,6 @@ package notifications
 import (
 	"bytes"
 	"fmt"
-	"log/slog"
 	"net/smtp"
 	"slices"
 	"strings"
@@ -17,10 +16,9 @@ type MailDriver struct {
 	addr     string
 	auth     smtp.Auth
 	template *template.Template
-	logger   *slog.Logger
 }
 
-func NewMailDriver(username, password, host, port string, logger *slog.Logger) *MailDriver {
+func NewMailDriver(username, password, host, port string) *MailDriver {
 	const templateName = "resources/templates/notifications/template.html"
 	auth := smtp.PlainAuth("", username, password, host)
 	t, err := template.ParseFiles(templateName)
@@ -33,7 +31,6 @@ func NewMailDriver(username, password, host, port string, logger *slog.Logger) *
 		addr:     fmt.Sprintf("%v:%v", host, port),
 		auth:     auth,
 		template: t,
-		logger:   logger,
 	}
 }
 
@@ -73,10 +70,10 @@ func (driver *MailDriver) NotifyUsers(to []*models.User, n Notification) error {
 		emails,
 		html)
 	if err != nil {
-		driver.logger.Error("Failed to send mail", "emails", emails, "err", err)
+		return fmt.Errorf("send mail to %d recipients: %w", len(emails), err)
 	}
 
-	return err
+	return nil
 }
 
 func (driver *MailDriver) toHTML(emails []string, n Notification) ([]byte, error) {

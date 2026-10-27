@@ -19,12 +19,12 @@ func (q *PgxQueries) CreateShop(ctx context.Context, data *models.ShopCreate) (i
 		var shopId int
 		err := row.Scan(&shopId)
 		if err != nil {
-			return 0, handlePgxError(ctx, err, q.logger)
+			return 0, handlePgxError(err)
 		}
 
 		err = q.setShopPaymentMethods(ctx, shopId, data.PaymentMethods)
 		if err != nil {
-			return 0, handlePgxError(ctx, err, q.logger)
+			return 0, handlePgxError(err)
 		}
 		return shopId, nil
 	})
@@ -54,12 +54,12 @@ func (q *PgxQueries) GetShops(ctx context.Context, params *models.GetShopsQueryP
 			"userId":   params.UserId,
 		})
 	if err != nil {
-		return nil, handlePgxError(ctx, err, q.logger)
+		return nil, handlePgxError(err)
 	}
 
 	shops, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.ShopOverview])
 	if err != nil {
-		return nil, handlePgxError(ctx, err, q.logger)
+		return nil, handlePgxError(err)
 	}
 	return shops, nil
 }
@@ -89,12 +89,12 @@ func (q *PgxQueries) GetShopById(ctx context.Context, shopId int) (*models.Shop,
 			"shopId": shopId,
 		})
 	if err != nil {
-		return nil, handlePgxError(ctx, err, q.logger)
+		return nil, handlePgxError(err)
 	}
 
 	shop, err := pgx.CollectOneRow(row, pgx.RowToAddrOfStructByNameLax[models.Shop])
 	if err != nil {
-		return nil, handlePgxError(ctx, err, q.logger)
+		return nil, handlePgxError(err)
 	}
 
 	owner, err := q.GetUser(ctx, shop.OwnerId)
@@ -123,7 +123,7 @@ func (q *PgxQueries) UpdateShop(ctx context.Context, shopId int, data *models.Sh
 				"shopId": shopId,
 			})
 		if err != nil {
-			return handlePgxError(ctx, err, q.logger)
+			return handlePgxError(err)
 		}
 
 		err = q.setShopPaymentMethods(ctx, shopId, data.PaymentMethods)
@@ -141,7 +141,7 @@ func (q *PgxQueries) DeleteShop(ctx context.Context, shopId int) error {
 			"shopId": shopId,
 		})
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 	return nil
 }
@@ -150,20 +150,20 @@ func (q *PgxQueries) setShopPaymentMethods(ctx context.Context, shopId int, meth
 	_, err := q.tx.Exec(ctx, `
     CREATE TEMPORARY TABLE _temp_upsert_payment_methods (LIKE payment_methods INCLUDING ALL ) ON COMMIT DROP`)
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	_, err = q.tx.CopyFrom(ctx, pgx.Identifier{"_temp_upsert_payment_methods"}, []string{"shop_id", "method"}, pgx.CopyFromSlice(len(methods), func(i int) ([]any, error) {
 		return []any{shopId, methods[i]}, nil
 	}))
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	_, err = q.tx.Exec(ctx, `
     INSERT INTO payment_methods SELECT * FROM _temp_upsert_payment_methods ON CONFLICT DO NOTHING`)
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	_, err = q.tx.Exec(ctx,
@@ -173,7 +173,7 @@ func (q *PgxQueries) setShopPaymentMethods(ctx context.Context, shopId int, meth
 			"methods": methods,
 		})
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	return nil
@@ -198,7 +198,7 @@ func (q *PgxQueries) GetShopUserPermissions(ctx context.Context, shopId int, use
 
 	err := row.Scan(&ownerId, &roles)
 	if err != nil {
-		return false, 0, handlePgxError(ctx, err, q.logger)
+		return false, 0, handlePgxError(err)
 	}
 	return ownerId == userId, roles, nil
 }
@@ -220,11 +220,11 @@ func (q *PgxQueries) AddUserToShop(ctx context.Context, shopId int, user *models
 		})
 
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return handlePgxError(ctx, pgx.ErrNoRows, q.logger)
+		return handlePgxError(pgx.ErrNoRows)
 	}
 
 	return nil
@@ -241,11 +241,11 @@ func (q *PgxQueries) RemoveUserFromShop(ctx context.Context, shopId int, user *m
 			"email":  user.Email,
 		})
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return handlePgxError(ctx, pgx.ErrNoRows, q.logger)
+		return handlePgxError(pgx.ErrNoRows)
 	}
 
 	return nil
@@ -263,11 +263,11 @@ func (q *PgxQueries) ConfirmShopInvite(ctx context.Context, shopId int, userId s
 		})
 
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return handlePgxError(ctx, pgx.ErrNoRows, q.logger)
+		return handlePgxError(pgx.ErrNoRows)
 	}
 
 	return nil
@@ -284,12 +284,12 @@ func (pq *PgxQueries) GetShopUsers(ctx context.Context, shopId int) ([]models.Sh
 		"shopId": shopId,
 	})
 	if err != nil {
-		return nil, handlePgxError(ctx, err, pq.logger)
+		return nil, handlePgxError(err)
 	}
 
 	users, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[models.ShopUser])
 	if err != nil {
-		return nil, handlePgxError(ctx, err, pq.logger)
+		return nil, handlePgxError(err)
 	}
 
 	return users, nil
@@ -308,11 +308,11 @@ func (pq *PgxQueries) AddShopSlackToken(ctx context.Context, shopId int, accessT
 		})
 
 	if err != nil {
-		return handlePgxError(ctx, err, pq.logger)
+		return handlePgxError(err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return handlePgxError(ctx, pgx.ErrNoRows, pq.logger)
+		return handlePgxError(pgx.ErrNoRows)
 	}
 
 	return nil
@@ -331,11 +331,11 @@ func (pq *PgxQueries) UpdateShopSlackChannels(ctx context.Context, shopId int, d
 	})
 
 	if err != nil {
-		return handlePgxError(ctx, err, pq.logger)
+		return handlePgxError(err)
 	}
 
 	if res.RowsAffected() == 0 {
-		return handlePgxError(ctx, pgx.ErrNoRows, pq.logger)
+		return handlePgxError(pgx.ErrNoRows)
 	}
 
 	return nil

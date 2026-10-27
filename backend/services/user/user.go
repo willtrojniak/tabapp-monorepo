@@ -49,7 +49,6 @@ func (h *Handler) GetUser(ctx context.Context, session *sessions.AuthedSession) 
 		return q.GetUser(ctx, session.UserId)
 	})
 	if err != nil {
-		h.logger.ErrorContext(ctx, "Failed to get user from database", "user_id", session.UserId, "err", err)
 		return nil, err
 	}
 	return user, nil
@@ -84,7 +83,6 @@ func (h *Handler) UpdateUser(ctx context.Context, session *sessions.AuthedSessio
 	})
 
 	if err != nil {
-		h.logger.ErrorContext(ctx, "Error updating user", "user_id", userId, "err", err)
 		return err
 	}
 

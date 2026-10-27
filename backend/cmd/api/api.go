@@ -2,7 +2,7 @@ package api
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
@@ -58,11 +58,11 @@ func (s *APIServer) Run() error {
 
 	authHandler, err := auth.NewHandler(errorHandler.Handle, sessionManager, userHandler, s.logger)
 	if err != nil {
-		log.Fatal("Failed to initialize auth handler")
+		return fmt.Errorf("initialize auth handler: %w", err)
 	}
 
 	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, errorHandler.Handle, s.logger)
-	reportHandler := reports.NewReportHandler(s.store, s.events, s.logger)
+	reportHandler := reports.NewReportHandler(s.store, s.events)
 
 	router := http.NewServeMux()
 	v1 := http.NewServeMux()
@@ -87,6 +87,7 @@ func (s *APIServer) Run() error {
 		failures := 0
 		for _, shop := range shops {
 			if err := reportHandler.GenerateShopTabOverview(context.Background(), int(shop.Id)); err != nil {
+				s.logger.Error("Failed to generate shop tab overview", "shop_id", shop.Id, "err", err)
 				failures++
 			}
 		}
