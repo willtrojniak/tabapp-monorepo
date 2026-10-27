@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	pg, err := db.NewPostgresStorage(context.Background(), pgConfig, logger)
+	pg, err := db.NewPostgresStorage(context.Background(), pgConfig)
 	if err != nil {
 		logger.Error("Failed to connect to postgres", "err", err)
 		os.Exit(1)
@@ -62,10 +62,9 @@ func main() {
 		env.Envs.EMAIL_CLIENT_USER,
 		env.Envs.EMAIL_CLIENT_PASSWORD,
 		env.Envs.EMAIL_CLIENT_HOST,
-		env.Envs.EMAIL_CLIENT_PORT,
-		logger),
+		env.Envs.EMAIL_CLIENT_PORT),
 		env.Envs.EMAIL_CLIENT_ENABLED)
-	notificationsService.RegisterDriver(notifications.NewSlackDriver(logger), env.Envs.SLACK_CLIENT_ENABLED)
+	notificationsService.RegisterDriver(notifications.NewSlackDriver(), env.Envs.SLACK_CLIENT_ENABLED)
 
 	gob.Register(uuid.UUID{})
 	server := api.NewAPIServer(":3000", pg, redis, eventDispatcher, logger)

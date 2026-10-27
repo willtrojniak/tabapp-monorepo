@@ -62,7 +62,7 @@ func (s *APIServer) Run() error {
 	}
 
 	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, errorHandler.Handle, s.logger)
-	reportHandler := reports.NewReportHandler(s.store, s.events, s.logger)
+	reportHandler := reports.NewReportHandler(s.store, s.events)
 
 	router := http.NewServeMux()
 	v1 := http.NewServeMux()

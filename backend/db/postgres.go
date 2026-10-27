@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"errors"
-	"log/slog"
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -17,19 +16,17 @@ type PgxConn interface {
 }
 
 type PgxStore struct {
-	pool   *pgxpool.Pool
-	logger *slog.Logger
+	pool *pgxpool.Pool
 }
 
-func NewPostgresStorage(ctx context.Context, config *pgxpool.Config, logger *slog.Logger) (*PgxStore, error) {
+func NewPostgresStorage(ctx context.Context, config *pgxpool.Config) (*PgxStore, error) {
 	pool, err := pgxpool.New(ctx, config.ConnString())
 	if err != nil {
 		return nil, err
 	}
 
 	pg := &PgxStore{
-		pool:   pool,
-		logger: logger,
+		pool: pool,
 	}
 
 	return pg, nil
@@ -38,22 +35,21 @@ func NewPostgresStorage(ctx context.Context, config *pgxpool.Config, logger *slo
 func (s *PgxStore) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := s.pool.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(ctx, err, s.logger)
+		return nil, handlePgxError(err)
 	}
-	return &PgxQueries{tx: tx, logger: s.logger}, nil
+	return &PgxQueries{tx: tx}, nil
 }
 
 type PgxQueries struct {
-	tx     pgx.Tx
-	logger *slog.Logger
+	tx pgx.Tx
 }
 
 func (q *PgxQueries) Begin(ctx context.Context) (*PgxQueries, error) {
 	tx, err := q.tx.Begin(ctx)
 	if err != nil {
-		return nil, handlePgxError(ctx, err, q.logger)
+		return nil, handlePgxError(err)
 	}
-	return &PgxQueries{tx: tx, logger: q.logger}, nil
+	return &PgxQueries{tx: tx}, nil
 }
 
 func (q *PgxQueries) Rollback(ctx context.Context) error {
@@ -82,7 +78,7 @@ func WithTx(ctx context.Context, conn PgxConn, fn func(*PgxQueries) error) error
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return handlePgxError(ctx, err, q.logger)
+		return handlePgxError(err)
 	}
 	return nil
 }
@@ -101,12 +97,12 @@ func WithTxRet[T any](ctx context.Context, conn PgxConn, fn func(*PgxQueries) (T
 
 	err = q.Commit(ctx)
 	if err != nil {
-		return *new(T), handlePgxError(ctx, err, q.logger)
+		return *new(T), handlePgxError(err)
 	}
 	return val, nil
 }
 
-func handlePgxError(ctx context.Context, err error, logger *slog.Logger) error {
+func handlePgxError(err error) error {
 	var pgerr *pgconn.PgError
 
 	if errors.Is(err, pgx.ErrNoRows) {

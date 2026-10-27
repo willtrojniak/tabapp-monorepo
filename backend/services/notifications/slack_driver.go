@@ -2,18 +2,15 @@ package notifications
 
 import (
 	"fmt"
-	"log/slog"
 
 	"github.com/slack-go/slack"
 	"github.com/willtrojniak/tabapp-monorepo/models"
 )
 
-type SlackDriver struct {
-	logger *slog.Logger
-}
+type SlackDriver struct{}
 
-func NewSlackDriver(logger *slog.Logger) *SlackDriver {
-	return &SlackDriver{logger: logger}
+func NewSlackDriver() *SlackDriver {
+	return &SlackDriver{}
 }
 
 func (d *SlackDriver) Name() string { return "Slack" }

@@ -2,7 +2,6 @@ package reports
 
 import (
 	"context"
-	"log/slog"
 	"slices"
 
 	"github.com/willtrojniak/tabapp-monorepo/db"
@@ -13,14 +12,12 @@ import (
 type ReportHandler struct {
 	store      *db.PgxStore
 	dispatcher *events.EventDispatcher
-	logger     *slog.Logger
 }
 
-func NewReportHandler(store *db.PgxStore, dispatcher *events.EventDispatcher, logger *slog.Logger) *ReportHandler {
+func NewReportHandler(store *db.PgxStore, dispatcher *events.EventDispatcher) *ReportHandler {
 	return &ReportHandler{
 		store:      store,
 		dispatcher: dispatcher,
-		logger:     logger,
 	}
 }
 
