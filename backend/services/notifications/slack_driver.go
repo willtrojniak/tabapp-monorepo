@@ -26,9 +26,9 @@ func (d *SlackDriver) NotifyShop(shop *models.Shop, n Notification) error {
 	client := slack.New(shop.SlackAccessToken.String())
 	_, _, _, err := client.SendMessage(channel, slack.MsgOptionBlocks(d.toMsg(n)...))
 	if err != nil {
-		d.logger.Error("Failed to send Slack message", "shop_id", shop.Id, "channel", channel, "err", err)
+		return fmt.Errorf("send slack message to %s for shop %d: %w", channel, shop.Id, err)
 	}
-	return err
+	return nil
 }
 func (d *SlackDriver) NotifyUsers([]*models.User, Notification) error { return nil }
 

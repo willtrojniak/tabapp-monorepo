@@ -43,7 +43,6 @@ func (rh *ReportHandler) GenerateShopTabOverview(ctx context.Context, shopId int
 		return nil
 	})
 	if err != nil {
-		rh.logger.ErrorContext(ctx, "Failed to generate shop tab overview", "shop_id", shopId, "err", err)
 		return err
 	}
 

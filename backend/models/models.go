@@ -45,8 +45,7 @@ func ValidateData(ctx context.Context, data interface{}, logger *slog.Logger) er
 
 	if err != nil {
 		if err, ok := err.(*validator.InvalidValidationError); ok {
-			logger.ErrorContext(ctx, "Invalid data passed to validator", "type", fmt.Sprintf("%T", data), "err", err)
-			return services.NewInternalServiceError(err)
+			return services.NewInternalServiceError(fmt.Errorf("validate %T: %w", data, err))
 		}
 
 		errors := make(services.ValidationErrors)

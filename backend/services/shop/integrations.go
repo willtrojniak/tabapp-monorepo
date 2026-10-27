@@ -2,6 +2,7 @@ package shop
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/slack-go/slack"
 	"github.com/willtrojniak/tabapp-monorepo/db"
@@ -31,8 +32,7 @@ func (h *Handler) GetShopSlackChannels(ctx context.Context, session *sessions.Au
 			channelData, next, err := client.GetConversationsContext(ctx, &slack.GetConversationsParameters{Types: []string{"public_channel", "private_channel"}, ExcludeArchived: true, Cursor: cursor})
 			cursor = next
 			if err != nil {
-				h.logger.ErrorContext(ctx, "Failed to fetch Slack channels", "shop_id", shopId, "err", err)
-				return services.NewInternalServiceError(err)
+				return services.NewInternalServiceError(fmt.Errorf("fetch slack channels for shop %d: %w", shopId, err))
 			}
 
 			for _, c := range channelData {

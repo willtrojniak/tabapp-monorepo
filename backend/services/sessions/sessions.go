@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -97,8 +98,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 
 	session, err := newSessionFromUser(ip, user)
 	if err != nil {
-		s.logger.ErrorContext(r.Context(), "Error while creating new session.", "err", err)
-		return nil, err
+		return nil, fmt.Errorf("create session: %w", err)
 	}
 
 	err = s.saveSessionToStore(r.Context(), session)
@@ -170,7 +170,9 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			s.saveSessionToResponse(w, session)
 		} else {
 			// Create a new anonymous session if there is no active session
-			s.SetNewSession(w, r, nil)
+			if _, err := s.SetNewSession(w, r, nil); err != nil {
+				s.logger.ErrorContext(r.Context(), "Failed to create anonymous session", "err", err)
+			}
 		}
 
 		if !safeMethod {
@@ -237,14 +239,12 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to marshal session data.", "user_id", session.data.UserId, "err", err)
-		return err
+		return fmt.Errorf("marshal session: %w", err)
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to save session to store.", "user_id", session.data.UserId, "err", err)
-		return err
+		return fmt.Errorf("save session: %w", err)
 	}
 
 	return nil

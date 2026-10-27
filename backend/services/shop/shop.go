@@ -79,7 +79,6 @@ func (h *Handler) GetShops(ctx context.Context, params *models.GetShopsQueryPara
 	return db.WithTxRet(ctx, h.store, func(pq *db.PgxQueries) ([]models.ShopOverview, error) {
 		shops, err := pq.GetShops(ctx, params)
 		if err != nil {
-			h.logger.ErrorContext(ctx, "Error reading from database", "err", err)
 			return nil, err
 		}
 		h.logger.DebugContext(ctx, "Retrieved shops", "count", len(shops))

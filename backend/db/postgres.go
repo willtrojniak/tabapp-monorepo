@@ -116,6 +116,5 @@ func handlePgxError(ctx context.Context, err error, logger *slog.Logger) error {
 	if errors.As(err, &pgerr) && pgerr.Code == pgerrcode.UniqueViolation {
 		return services.NewDataConflictServiceError(err)
 	}
-	logger.ErrorContext(ctx, "Database operation failed", "err", err)
 	return services.NewInternalServiceError(err)
 }

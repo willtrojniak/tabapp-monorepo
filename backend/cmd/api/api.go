@@ -87,6 +87,7 @@ func (s *APIServer) Run() error {
 		failures := 0
 		for _, shop := range shops {
 			if err := reportHandler.GenerateShopTabOverview(context.Background(), int(shop.Id)); err != nil {
+				s.logger.Error("Failed to generate shop tab overview", "shop_id", shop.Id, "err", err)
 				failures++
 			}
 		}

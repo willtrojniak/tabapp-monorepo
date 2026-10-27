@@ -73,10 +73,10 @@ func (driver *MailDriver) NotifyUsers(to []*models.User, n Notification) error {
 		emails,
 		html)
 	if err != nil {
-		driver.logger.Error("Failed to send mail", "emails", emails, "err", err)
+		return fmt.Errorf("send mail to %d recipients: %w", len(emails), err)
 	}
 
-	return err
+	return nil
 }
 
 func (driver *MailDriver) toHTML(emails []string, n Notification) ([]byte, error) {
