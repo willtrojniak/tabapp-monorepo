@@ -101,7 +101,7 @@ func (h *Handler) RegisterRoutes(router *http.ServeMux) {
 func (h *Handler) handleCreateShop(w http.ResponseWriter, r *http.Request, session *sessions.AuthedSession) {
 
 	data := &models.ShopCreate{}
-	err := models.ReadRequestJson(r, data, h.logger)
+	err := models.ReadRequestJson(r, data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -179,7 +179,7 @@ func (h *Handler) handleUpdateShop(w http.ResponseWriter, r *http.Request, sessi
 	}
 
 	data := models.ShopUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -283,7 +283,7 @@ func (h *Handler) handleUpdateSlackChannels(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	data := models.ShopSlackDataUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -304,7 +304,7 @@ func (h *Handler) handleInviteUser(w http.ResponseWriter, r *http.Request, sessi
 	}
 
 	data := models.ShopUserCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -325,7 +325,7 @@ func (h *Handler) handleRemoveUser(w http.ResponseWriter, r *http.Request, sessi
 	}
 
 	data := models.ShopUserCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -368,7 +368,7 @@ func (h *Handler) handleCreateLocation(w http.ResponseWriter, r *http.Request, s
 	}
 
 	data := models.LocationCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -396,7 +396,7 @@ func (h *Handler) handleUpdateLocation(w http.ResponseWriter, r *http.Request, s
 	}
 
 	data := models.LocationUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -437,7 +437,7 @@ func (h *Handler) handleCreateCategory(w http.ResponseWriter, r *http.Request, s
 	}
 
 	data := models.CategoryCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -482,7 +482,7 @@ func (h *Handler) handleUpdateCategory(w http.ResponseWriter, r *http.Request, s
 	}
 
 	data := models.CategoryUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -524,7 +524,7 @@ func (h *Handler) handleCreateItem(w http.ResponseWriter, r *http.Request, sessi
 	}
 
 	data := models.ItemCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -569,7 +569,7 @@ func (h *Handler) handleUpdateItem(w http.ResponseWriter, r *http.Request, sessi
 	}
 
 	data := models.ItemUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -640,7 +640,7 @@ func (h *Handler) handleCreateItemVariant(w http.ResponseWriter, r *http.Request
 	}
 
 	data := models.ItemVariantCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -676,7 +676,7 @@ func (h *Handler) handleUpdateItemVariant(w http.ResponseWriter, r *http.Request
 	}
 
 	data := models.ItemVariantUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -722,7 +722,7 @@ func (h *Handler) handleCreateSubstitutionGroup(w http.ResponseWriter, r *http.R
 	}
 
 	data := models.SubstitutionGroupCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -750,7 +750,7 @@ func (h *Handler) handleUpdateSubstitutionGroup(w http.ResponseWriter, r *http.R
 	}
 
 	data := models.SubstitutionGroupUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -809,7 +809,7 @@ func (h *Handler) handleCreateTab(w http.ResponseWriter, r *http.Request, sessio
 	}
 
 	data := models.TabCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -890,7 +890,7 @@ func (h *Handler) handleUpdateTab(w http.ResponseWriter, r *http.Request, sessio
 	}
 
 	data := models.TabUpdate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -958,7 +958,7 @@ func (h *Handler) handleAddOrderToTab(w http.ResponseWriter, r *http.Request, se
 	}
 
 	data := models.BillOrderCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return
@@ -986,7 +986,7 @@ func (h *Handler) handleRemoveOrderFromTab(w http.ResponseWriter, r *http.Reques
 	}
 
 	data := models.BillOrderCreate{}
-	err = models.ReadRequestJson(r, &data, h.logger)
+	err = models.ReadRequestJson(r, &data)
 	if err != nil {
 		h.handleError(w, r, err)
 		return

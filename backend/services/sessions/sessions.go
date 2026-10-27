@@ -179,6 +179,7 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			}
 
 			if requestToken != session.data.CSRFToken {
+				s.logger.WarnContext(r.Context(), "CSRF token mismatch", "session_id", session.Id)
 				return ErrCSRFMismatch
 			}
 		}

@@ -52,7 +52,7 @@ func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error)
 	if httpErr.StatusCode() >= 500 {
 		h.logger.ErrorContext(r.Context(), "Request failed", attrs...)
 	} else {
-		h.logger.WarnContext(r.Context(), "Request failed", attrs...)
+		h.logger.DebugContext(r.Context(), "Request failed", attrs...)
 	}
 
 	writeHttpError(w, httpErr)

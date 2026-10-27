@@ -30,7 +30,8 @@ type errorResponseBody struct {
 // returned buffer, decodable as a single JSON record per call to Handle.
 func newTestErrorHandler() (*ErrorHandler, *bytes.Buffer) {
 	var buf bytes.Buffer
-	return NewErrorHandler(slog.New(NewRequestIDHandler(slog.NewJSONHandler(&buf, nil)))), &buf
+	jsonHandler := slog.NewJSONHandler(&buf, &slog.HandlerOptions{Level: slog.LevelDebug})
+	return NewErrorHandler(slog.New(NewRequestIDHandler(jsonHandler))), &buf
 }
 
 func decodeLogRecord(t *testing.T, buf *bytes.Buffer) map[string]any {
@@ -72,7 +73,7 @@ func TestHandleHttpError_GenericErrorIs500(t *testing.T) {
 
 func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	wantStatus := http.StatusBadRequest
-	wantLevel := slog.LevelWarn.String()
+	wantLevel := slog.LevelDebug.String()
 
 	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()

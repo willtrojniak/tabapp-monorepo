@@ -61,7 +61,7 @@ func ValidateData(ctx context.Context, data interface{}, logger *slog.Logger) er
 	return nil
 }
 
-func ReadRequestJson(r *http.Request, dest interface{}, logger *slog.Logger) error {
+func ReadRequestJson(r *http.Request, dest interface{}) error {
 	mediaType := getMediaType(r)
 	if mediaType != "application/json" {
 		return services.NewServiceError(nil, http.StatusUnsupportedMediaType, nil)
@@ -82,7 +82,6 @@ func ReadRequestJson(r *http.Request, dest interface{}, logger *slog.Logger) err
 		case uuid.IsInvalidLengthError(err):
 			return services.NewServiceError(err, http.StatusBadRequest, fmt.Sprintf("Invalid UUID value"))
 		default:
-			logger.WarnContext(r.Context(), "Issue reading JSON from request body", "err", err)
 			return services.NewInternalServiceError(err)
 		}
 	}
