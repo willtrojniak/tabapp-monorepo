@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -96,6 +97,20 @@ func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	record := decodeLogRecord(t, buf)
 	if level, _ := record["level"].(string); level != wantLevel {
 		t.Errorf("got log level %q, want %q", level, wantLevel)
+	}
+}
+
+func TestHandleHttpError_WrappedServiceErrorKeepsItsStatus(t *testing.T) {
+	wantStatus := http.StatusNotFound
+
+	eh, _ := newTestErrorHandler()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodGet, testPath, nil)
+
+	eh.Handle(rec, req, fmt.Errorf("get widget: %w", NewNotFoundServiceError(testBoomErr)))
+
+	if rec.Code != wantStatus {
+		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
 	}
 }
 

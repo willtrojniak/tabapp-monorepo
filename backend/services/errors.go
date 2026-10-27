@@ -2,6 +2,7 @@ package services
 
 import (
 	"encoding/json"
+	"errors"
 	"log/slog"
 	"net/http"
 )
@@ -36,10 +37,7 @@ func NewErrorHandler(logger *slog.Logger) *ErrorHandler {
 
 func (h *ErrorHandler) Handle(w http.ResponseWriter, r *http.Request, err error) {
 	var httpErr HTTPError
-	switch e := err.(type) {
-	case HTTPError:
-		httpErr = e
-	default:
+	if !errors.As(err, &httpErr) {
 		httpErr = NewInternalServiceError(err)
 	}
 
