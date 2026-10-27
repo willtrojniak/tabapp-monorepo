@@ -110,13 +110,13 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		// The client has a previous saved session
 		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "session_id", oldSessionId, "err", err)
+			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "err", err)
 		}
 	}
 
 	s.saveSessionToResponse(w, session)
 
-	s.logger.DebugContext(r.Context(), "Session created", "session_id", session.Id)
+	s.logger.DebugContext(r.Context(), "Session created", "user_id", session.data.UserId)
 
 	return session, nil
 }
@@ -179,7 +179,7 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			}
 
 			if requestToken != session.data.CSRFToken {
-				s.logger.WarnContext(r.Context(), "CSRF token mismatch", "session_id", session.Id)
+				s.logger.WarnContext(r.Context(), "CSRF token mismatch", "user_id", session.data.UserId)
 				return ErrCSRFMismatch
 			}
 		}
@@ -237,13 +237,13 @@ func (s *Handler) saveSessionToResponse(w http.ResponseWriter, session *Session)
 func (s *Handler) saveSessionToStore(ctx context.Context, session *Session) error {
 	data, err := json.Marshal(session.data)
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to marshal session data.", "session_id", session.Id, "err", err)
+		s.logger.ErrorContext(ctx, "Failed to marshal session data.", "user_id", session.data.UserId, "err", err)
 		return err
 	}
 
 	err = s.store.Set(ctx, session.Id, data, s.ttl(session))
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to save session to store.", "session_id", session.Id, "err", err)
+		s.logger.ErrorContext(ctx, "Failed to save session to store.", "user_id", session.data.UserId, "err", err)
 		return err
 	}
 
