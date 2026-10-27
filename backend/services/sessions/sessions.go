@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -60,10 +59,7 @@ var ErrIpMismatch = IpMismatchError{}
 type SessionNotAuthedError struct{}
 type NoSessionError struct{}
 type NoCSRFTokenError struct{}
-type CSRFMismatchError struct {
-	stored string
-	seen   string
-}
+type CSRFMismatchError struct{}
 type IpMismatchError struct{}
 
 func (e SessionNotAuthedError) Error() string {
@@ -79,11 +75,7 @@ func (e NoCSRFTokenError) Error() string {
 }
 
 func (e CSRFMismatchError) Error() string {
-	return fmt.Sprintf("Request CSRF Token (%s) did not match stored (%s)", e.seen, e.stored)
-}
-
-func (e CSRFMismatchError) Is(target error) bool {
-	return target == ErrCSRFMismatch
+	return "Request CSRF token did not match stored token"
 }
 
 func (e IpMismatchError) Error() string {
@@ -187,10 +179,7 @@ func (s *Handler) RequireCSRFToken(next http.Handler) services.HttpHandlerErrorF
 			}
 
 			if requestToken != session.data.CSRFToken {
-				return CSRFMismatchError{
-					stored: session.data.CSRFToken,
-					seen:   requestToken,
-				}
+				return ErrCSRFMismatch
 			}
 		}
 

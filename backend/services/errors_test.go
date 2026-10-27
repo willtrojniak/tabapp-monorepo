@@ -98,6 +98,25 @@ func TestHandleHttpError_ServiceErrorUsesItsOwnStatus(t *testing.T) {
 	}
 }
 
+func TestHandleHttpError_ServiceErrorWithoutCause(t *testing.T) {
+	wantStatus := http.StatusUnsupportedMediaType
+
+	eh, buf := newTestErrorHandler()
+	rec := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, testPath, nil)
+
+	eh.Handle(rec, req, NewServiceError(nil, wantStatus, nil))
+
+	if rec.Code != wantStatus {
+		t.Errorf("got status %d, want %d", rec.Code, wantStatus)
+	}
+
+	record := decodeLogRecord(t, buf)
+	if got, _ := record["err"].(string); got != http.StatusText(wantStatus) {
+		t.Errorf("got err %q, want %q", got, http.StatusText(wantStatus))
+	}
+}
+
 func TestHandleHttpError_IncludesRequestID(t *testing.T) {
 	eh, buf := newTestErrorHandler()
 	rec := httptest.NewRecorder()

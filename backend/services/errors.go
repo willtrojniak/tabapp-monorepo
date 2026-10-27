@@ -112,6 +112,9 @@ func (e *ServiceError) Data() interface{} {
 }
 
 func (e *ServiceError) Error() string {
+	if e.err == nil {
+		return e.msg
+	}
 	return e.err.Error()
 }
 
