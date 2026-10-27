@@ -80,7 +80,7 @@ func (h *Handler) Authorize(r *http.Request, cfg *oauth2.Config) (*oauth2.Token,
 
 	if r.URL.Query().Get("state") != state.Value {
 		h.logger.WarnContext(r.Context(), "OAuth state mismatch")
-		return nil, services.NewUnauthorizedServiceError(fmt.Errorf("State did not match"))
+		return nil, services.NewUnauthorizedServiceError(fmt.Errorf("state did not match"))
 	}
 
 	// Exchange the code for a token

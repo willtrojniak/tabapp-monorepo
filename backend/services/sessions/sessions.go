@@ -110,7 +110,7 @@ func (s *Handler) SetNewSession(w http.ResponseWriter, r *http.Request, user *mo
 		// The client has a previous saved session
 		err := s.store.Delete(r.Context(), oldSessionId)
 		if err != nil {
-			s.logger.WarnContext(r.Context(), "Failed to delete old session from store.", "err", err)
+			s.logger.WarnContext(r.Context(), "Failed to delete old session from store", "err", err)
 		}
 	}
 

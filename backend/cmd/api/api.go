@@ -58,7 +58,7 @@ func (s *APIServer) Run() error {
 
 	authHandler, err := auth.NewHandler(errorHandler.Handle, sessionManager, userHandler, s.logger)
 	if err != nil {
-		return fmt.Errorf("failed to initialize auth handler: %w", err)
+		return fmt.Errorf("initialize auth handler: %w", err)
 	}
 
 	shopHandler := shop.NewHandler(s.store, authHandler, sessionManager, s.events, errorHandler.Handle, s.logger)
